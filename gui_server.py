@@ -225,7 +225,7 @@ class Gui_base:
         while not self.StopEVENT.is_set():
             self.update_display()
             self.root.update()
-            self.root.after(100)
+            self.root.after(10)
         # self.root.mainloop()
 
     def get_loop(self, loop):
@@ -384,8 +384,8 @@ if __name__ == '__main__':
     print("Server ON")
     s.listen(5)
 
-    cam1_que = Queue(maxsize=100)
-    cam2_que = Queue(maxsize=100)
+    cam1_que = Queue(maxsize=1)
+    cam2_que = Queue(maxsize=1)
     tof1_que = Queue(maxsize=100)
     tof2_que = Queue(maxsize=100)
 

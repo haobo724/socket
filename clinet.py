@@ -14,12 +14,14 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    img = cv2.imread('test.jpg')
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    v = cv2.VideoCapture(0)
+    # img = cv2.imread('test.jpg')
+    # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     area_reader  = model_infer(
         r'res34epoch=191-val_Iou=0.78.ckpt')
     # send_data = cv2.resize(img, (640, 480)).tobytes()
     while True:
+            ret,img =v.read()
             # self.mask_type是一个字符串, 用于给服务端判断是返回原图还是预测后的图片
             # print('Please type a str origin or pred')
             # mask_type = input()
@@ -27,9 +29,9 @@ def get_display():
             #     print('Input valid')
             #     continue
 
-            send_data=area_reader.forward(img).astype(
-                np.uint8)
-            send_data = cv2.resize(send_data, (640, 480)).tobytes()
+            # send_data=area_reader.forward(img).astype(
+            #     np.uint8)
+            send_data = cv2.resize(img, (640, 480)).tobytes()
 
             arrBuf = bytearray(b'\xff\xaa\xff\xaa')
             # if send_data is None:
