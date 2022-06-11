@@ -310,7 +310,7 @@ def get_data(c, addr, queue_list, StopEVENT,s):
         allData = b''
         # 通过循环获取完整图片数据
         while curSize < allLen:
-            data = c.recv(2048)
+            data = c.recv(8192)
 
             # try:
             # except BlockingIOError:
@@ -326,7 +326,7 @@ def get_data(c, addr, queue_list, StopEVENT,s):
         # bytes转PIL.Image
         img = Image.frombuffer('RGB', (640, 480), imgData)
         # 传过来的图片被上下镜面了，将其返回来
-        img = img.transpose(Image.FLIP_TOP_BOTTOM)
+        # img = img.transpose(Image.FLIP_TOP_BOTTOM)
         # PIL.Image转ndarray
         img_conv = np.array(img)
 
@@ -349,6 +349,7 @@ def get_data(c, addr, queue_list, StopEVENT,s):
         else:
             data = bytes('False', encoding='utf-8')
         c.sendall(data)
+        print(time.time()-time_start)
 
     c.close()
     print('disconnect:', addr)

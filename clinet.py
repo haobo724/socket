@@ -29,9 +29,9 @@ def get_display():
             #     print('Input valid')
             #     continue
 
-            # send_data=area_reader.forward(img).astype(
-            #     np.uint8)
-            send_data = cv2.resize(img, (640, 480)).tobytes()
+            send_data=area_reader.forward(img).astype(
+                np.uint8)
+            send_data = cv2.resize(send_data, (640, 480)).tobytes()
 
             arrBuf = bytearray(b'\xff\xaa\xff\xaa')
             # if send_data is None:
