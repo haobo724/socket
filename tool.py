@@ -1,4 +1,6 @@
 import os
+import queue
+
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import segmentation_models_pytorch as smp
 import cv2
@@ -11,6 +13,34 @@ from PIL import Image
 
 IMAGE_HEIGHT = 256  # 1096 originally  0.25
 IMAGE_WIDTH = 448  # 1936 originall
+class Buffer():
+    def __init__(self,size):
+        self.q  = queue.Queue(size)
+        self.list = []
+
+    def __getitem__(self,num):
+        if num > len(self.list):
+            raise IndexError('list index out of range')
+        return self.list[num]
+
+
+    def append(self,num):
+        if not self.q.full():
+            self.q.put(num)
+            self.list.append(num)
+        else:
+            self.q.get()
+            self.q.put(num)
+            del self.list[0]
+            self.list.append(num)
+    def mean(self):
+        if self.q.empty():
+            return 0
+        return np.mean(self.list)
+    def most(self):
+        vals, counts = np.unique(self.list, return_counts=True)
+        index = np.argmax(counts)
+        return vals[index]
 
 def mapping_color_tensor(img):
     '''

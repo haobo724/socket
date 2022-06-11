@@ -10,18 +10,18 @@ from tool import model_infer
 
 def get_display():
     host = socket.gethostname()
-    port = 1234
+    port = 1444
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(0)
-    # img = cv2.imread('test.jpg')
-    # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    # v = cv2.VideoCapture(0)
+    img = cv2.imread('test.jpg')
+    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     area_reader  = model_infer(
         r'res34epoch=191-val_Iou=0.78.ckpt')
     # send_data = cv2.resize(img, (640, 480)).tobytes()
     while True:
-            ret,img =v.read()
+            # ret,img =v.read()
             # self.mask_type是一个字符串, 用于给服务端判断是返回原图还是预测后的图片
             # print('Please type a str origin or pred')
             # mask_type = input()
