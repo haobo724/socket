@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageTk
 
 from Gui_base import Gui_base
-from Gui_base import host, port
+from Gui_base import host, port ,CLIENT_NR
 from tool import Buffer
 
 global pred_frame_bytes
@@ -51,32 +51,13 @@ class Gui(Gui_base):
             self.root.after(10)
         # self.root.mainloop()
 
-    def get_loop(self, loop):
-        pass
-
-    def reset(self):
-        pass
-
-    def show_whole_breast_img(self):
-        pass
-
-    def get_param_image(self):
-        pass
-
-    def get_breast_image(self):
-        pass
-
-    def recognize_param_image(self):
-        pass
-
-    def measure_breast_area(self):
-        pass
-
     # @timer
     def update_display(self):
         # while not StopEVENT.is_set():
 
         try:
+            if self.queue_list[1].empty():
+                return
             bot_img = self.queue_list[1].get()
             info = self.queue_list[4].get()
             self.force_buffer.append(info[0])
@@ -155,9 +136,7 @@ def get_data(c, addr, queue_list, StopEVENT):
     print('connect:', addr)
     while not StopEVENT.is_set():
         time_start = time.time()
-        # if queue_list[5].full():
-        #     queue_list[5].get()
-        #     queue_list[5].get()
+
         str = c.recv(8)
         save_flag = False
         # try:
@@ -196,13 +175,6 @@ def get_data(c, addr, queue_list, StopEVENT):
 
                 queue_list[3].put(img_conv)
                 # cv2.imshow('pic', img_conv)
-
-            # print('data_type',data_type.decode())
-            # queue_list[5].put(True)
-            # while True:
-            #     print(data_type, 'wait')
-            #     if queue_list[5].full():
-            #         break
 
             if save_flag:
                 print(data_type, 'wait')
@@ -273,6 +245,7 @@ if __name__ == '__main__':
     while True:
         try:
             clientSock, addr = s.accept()
+
             # clientSock.setblocking(False)
         except BlockingIOError:
             # print('time out')
@@ -281,7 +254,7 @@ if __name__ == '__main__':
         process_pool.append(p)
         p.start()
         client_timer += 1
-        if client_timer == 2:
+        if client_timer == CLIENT_NR:
             print('stop')
             break
     while not StopEVENT.is_set():

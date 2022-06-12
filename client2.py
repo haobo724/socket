@@ -1,15 +1,19 @@
-import socket
-import numpy as np
-import cv2
 import os
-from Gui_base import host ,port
+import pickle
+import socket
+
+import cv2
+import numpy as np
+
+from Gui_base import host, port
+
 template_dir = 'OCR_template'
 img_template = []
 if os.path.exists(template_dir):
     for i in range(10):
         img_file_path = os.path.join(template_dir, str(i) + '.jpg')
-        if not os.access(img_file_path,os.F_OK):
-            img_file_path = os.path.join(template_dir, 'result_'+str(i) + '.tiff')
+        if not os.access(img_file_path, os.F_OK):
+            img_file_path = os.path.join(template_dir, 'result_' + str(i) + '.tiff')
 
         t = cv2.imread(img_file_path, 0)
         t = cv2.resize(t, (50, 90))
@@ -17,6 +21,8 @@ if os.path.exists(template_dir):
         print(f'[INFO] TEMPLATE {i} lOADED')
 else:
     raise FileNotFoundError('NO TEMPLATE')
+
+
 def get_match_score(img, template):
     # print(np.max(template))
     tp = (img == 255) == (template == 255)
@@ -25,12 +31,14 @@ def get_match_score(img, template):
     fn = (img == 0) == (template == 255)
 
     # score =( np.sum(tp) + np.sum(tn)) / (np.sum(tp) + np.sum(tn) + np.sum(fp) + np.sum(fn))
-    score =( np.sum(tp) + np.sum(tn)- np.sum(fp) - np.sum(fn))
+    score = (np.sum(tp) + np.sum(tn) - np.sum(fp) - np.sum(fn))
     return score
+
 
 def OCR(imfrag):
     # new method of reading digits in the imfrag
     _, imfrag_h = imfrag.shape
+
     ret2, imfrag = cv2.threshold(imfrag, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     roi_size = (50, 90)
     # detect single digit and detect
@@ -51,7 +59,7 @@ def OCR(imfrag):
 
     # if no connected component is detected, return ''
     if digitCnts == []:
-        return -1,-1
+        return -1, -1
     # sort using x direction
     idx = np.argsort(xloc)
     tmp = digitCnts.copy()
@@ -62,7 +70,7 @@ def OCR(imfrag):
     digit = ''
     if len(digitCnts) > 3 or len(digitCnts) < 1:
         print('detect error,Suggested click restart btn')
-        return -1,-1
+        return -1, -1
     # print(len(digitCnts))
     for c in digitCnts:
         (x, y, w, h) = cv2.boundingRect(c)
@@ -89,30 +97,40 @@ def OCR(imfrag):
     except ValueError:
         result = -1
     if result > 200:
-        return -1,-1
+        return -1, -1
     else:
         pass
         # print(result)
-    return result , 10
+    return result, 10
+
 
 def get_display():
-
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    img = cv2.imread('test2.jpg')
-    img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    frame_number = 0
+    img = cv2.imread('bot.jpg')
+    img = cv2.resize(img, (640, 480))
 
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    frame_number = 0
+    file_name = 'M.pkl'
+
+    with open(file_name, 'rb') as file:
+        M = pickle.load(file)
+    file_name = 'bot.pkl'
+
+    with open(file_name, 'rb') as file:
+        box = pickle.load(file)
+    x, y, w, h = box
     while True:
 
-        height , force = OCR(img_gray)
-
-        send_data = cv2.resize(img, (640, 480)).tobytes()
+        height, force = OCR(img_gray)
+        send_data = cv2.warpPerspective(img, M, (w, h))
+        send_data = cv2.resize(send_data, (640, 480)).tobytes()
 
         height_b = bytes(height.to_bytes(4, byteorder='little'))
-        force_b = bytes(force.to_bytes(4, byteorder='little',signed=True))
-        head = height_b+force_b
+        force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
+        head = height_b + force_b
         # print(len(head))
         arrBuf = bytearray(b'\xff\xaa\xff\xaa')
         # if send_data is None:
@@ -131,11 +149,15 @@ def get_display():
 
         arrBuf += picBytes
         s.sendall(arrBuf)
-        rec_data = s.recv(64)
-        print(str(rec_data, encoding='utf-8'))
-        print('c2:',frame_number)
-        frame_number += 1
+        try:
+            rec_data = s.recv(64)
+            print(str(rec_data, encoding='utf-8'))
+            print('c2:', frame_number)
+            frame_number += 1
 
+        except ConnectionResetError or ConnectionAbortedError:
+            break
+    s.close()
 
 
 if __name__ == '__main__':

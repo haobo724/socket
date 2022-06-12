@@ -1,7 +1,7 @@
 import os
 import time
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+# os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 import socket
 import numpy as np
@@ -49,11 +49,17 @@ def get_display():
         arrBuf += data_type
         arrBuf += picBytes
         s.sendall(arrBuf)
-        rec_data = s.recv(64)
-        print(str(rec_data, encoding='utf-8'))
-        print('c1:',frame_number)
-        frame_number += 1
+        try:
+            rec_data = s.recv(64)
+            print(str(rec_data, encoding='utf-8'))
+            print('c1:', frame_number)
+            frame_number += 1
+
+        except ConnectionAbortedError:
+            break
         # print(time.time()-t)
+    s.close()
+
 
 
 if __name__ == '__main__':

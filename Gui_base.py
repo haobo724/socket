@@ -17,6 +17,7 @@ FONT_SIZE = 18
 FONT_COLOR = 'black'
 host = socket.gethostname()
 port = 12
+CLIENT_NR =2
 
 class Gui_base:
     def __init__(self, queue_list, StopEVENT):
