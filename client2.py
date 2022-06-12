@@ -2,6 +2,7 @@ import socket
 import numpy as np
 import cv2
 import os
+from Gui_base import host ,port
 template_dir = 'OCR_template'
 img_template = []
 if os.path.exists(template_dir):
@@ -95,48 +96,45 @@ def OCR(imfrag):
     return result , 10
 
 def get_display():
-    host = socket.gethostname()
-    port = 1444
+
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    img = cv2.imread('test2.jpg',0)
-    # img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    print(img.shape)
+    img = cv2.imread('test2.jpg')
+    img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    frame_number = 0
+
     while True:
-            # self.mask_type是一个字符串, 用于给服务端判断是返回原图还是预测后的图片
-            # print('Please type a str origin or pred')
-            # mask_type = input()
-            # if not (mask_type == 'origin' or mask_type == 'pred'):
-            #     print('Input valid')
-            #     continue
-            height , force = OCR(img)
 
-            send_data = cv2.resize(img, (640, 480)).tobytes()
+        height , force = OCR(img_gray)
 
-            height_b = bytes(height.to_bytes(4, byteorder='little'))
-            force_b = bytes(force.to_bytes(4, byteorder='little',signed=True))
-            head = height_b+force_b
-            # print(len(head))
-            arrBuf = bytearray(b'\xff\xaa\xff\xaa')
-            # if send_data is None:
-            #     # s.sendall(arrBuf)
-            #     continue
-            picBytes = send_data
+        send_data = cv2.resize(img, (640, 480)).tobytes()
 
-            # 图片大小
-            picSize = len(picBytes)
+        height_b = bytes(height.to_bytes(4, byteorder='little'))
+        force_b = bytes(force.to_bytes(4, byteorder='little',signed=True))
+        head = height_b+force_b
+        # print(len(head))
+        arrBuf = bytearray(b'\xff\xaa\xff\xaa')
+        # if send_data is None:
+        #     # s.sendall(arrBuf)
+        #     continue
+        picBytes = send_data
 
-            data_type = b'cam2'
-            # 组合数据包
-            arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
-            arrBuf += data_type
-            arrBuf += head
+        # 图片大小
+        picSize = len(picBytes)
 
-            arrBuf += picBytes
-            s.sendall(arrBuf)
-            rec_data = s.recv(64)
-            print(str(rec_data, encoding='utf-8'))
+        data_type = b'cam2'
+        # 组合数据包
+        arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
+        arrBuf += data_type
+        arrBuf += head
+
+        arrBuf += picBytes
+        s.sendall(arrBuf)
+        rec_data = s.recv(64)
+        print(str(rec_data, encoding='utf-8'))
+        print('c2:',frame_number)
+        frame_number += 1
 
 
 

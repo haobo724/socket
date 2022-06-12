@@ -3,7 +3,7 @@ import tkinter as tk
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-
+import socket
 global pred_frame_bytes
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -15,6 +15,8 @@ WINDOW_WIDTH = 1280
 BTN_SIZE = [200, 100]
 FONT_SIZE = 18
 FONT_COLOR = 'black'
+host = socket.gethostname()
+port = 12
 
 class Gui_base:
     def __init__(self, queue_list, StopEVENT):

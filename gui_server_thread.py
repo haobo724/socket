@@ -1,8 +1,8 @@
 import queue
 import socket
 import time
-from multiprocessing import Process, Queue, Event,Manager
-
+from multiprocessing import Process, Queue, Event
+import threading,queue
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -34,7 +34,7 @@ class Gui(Gui_base):
         # asyncio.run_coroutine_threadsafe(t, self.loop)
         # self.root.update()
         self.Recoding_flag = False
-        self.timer=time.time()
+
         self.force_buffer = Buffer(20)
         codec = cv2.VideoWriter_fourcc(*'mp4v')
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
@@ -44,7 +44,7 @@ class Gui(Gui_base):
         self.out_bot_path = f'patient{self.patient_idx}_bot.mp4'
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
-
+        self.timer = time.time()
         while not self.StopEVENT.is_set():
             self.update_display()
             self.root.update()
@@ -77,12 +77,11 @@ class Gui(Gui_base):
         # while not StopEVENT.is_set():
 
         try:
-            bot_img = self.queue_list[1].get()
-            info = self.queue_list[4].get()
+            bot_img = self.queue_list[1].get_nowait()
+            info = self.queue_list[4].get_nowait()
             self.force_buffer.append(info[0])
-            top_img = self.queue_list[0].get()
-            self.queue_list[5].release()
-            self.queue_list[5].release()
+            top_img = self.queue_list[0].get_nowait()
+
             # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
             #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
             # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
@@ -113,8 +112,8 @@ class Gui(Gui_base):
                     self.out_bot.release()
 
                     self.new_writer()
-            print('update lag =',time.time()-self.timer)
-            self.timer =time.time()
+            print('update lag =', time.time() - self.timer)
+            self.timer = time.time()
         except queue.Empty:
             pass
             # print('top:', self.queue_list[0].qsize())
@@ -158,12 +157,13 @@ def get_data(c, addr, queue_list, StopEVENT):
         # if queue_list[5].full():
         #     queue_list[5].get()
         #     queue_list[5].get()
-        str = c.recv(8)
+
         save_flag = False
-        # try:
-        # except BlockingIOError:
-        #     print('不完整？')
-        #     continue
+        try:
+            str = c.recv(8)
+
+        except BlockingIOError:
+            continue
         data = bytearray(str)
         headIndex = data.find(b'\xff\xaa\xff\xaa')
         if headIndex == 0:
@@ -203,14 +203,9 @@ def get_data(c, addr, queue_list, StopEVENT):
             #     print(data_type, 'wait')
             #     if queue_list[5].full():
             #         break
-
             if save_flag:
-                print(data_type, 'wait')
-                queue_list[5].acquire()
-                print(data_type, 'hi')
                 data = bytes('True', encoding='utf-8')
             else:
-                print(data_type,'wrong data')
                 data = bytes('False', encoding='utf-8')
             c.sendall(data)
             # print(data_type,time.time() - time_start)
@@ -225,12 +220,12 @@ def get_img(c, allLen):
     allData = b''
     # 通过循环获取完整图片数据
     while curSize < allLen:
-        data = c.recv(8192)
 
-        # try:
-        # except BlockingIOError:
-        #     print('不完整？')
-        #     continue
+        try:
+            data = c.recv(8192)
+
+        except BlockingIOError:
+            continue
         allData += data
         curSize += len(data)
     # 取出图片数据
@@ -247,6 +242,10 @@ def get_img(c, allLen):
     return img_conv
 
 
+# except Exception as e:
+#     print("远程主机强制关闭连接")
+#     print(e.args)
+# s.close()
 
 
 # 按间距中的绿色按钮以运行脚本。
@@ -259,25 +258,25 @@ if __name__ == '__main__':
     print("Server ON")
     s.listen(5)
 
-    cam1_que = Queue(maxsize=1)
-    cam2_que = Queue(maxsize=1)
-    cam2_info_que = Queue(maxsize=1)
-    syn_que = Manager().Semaphore(0)
-    tof1_que = Queue(maxsize=100)
-    tof2_que = Queue(maxsize=100)
-    queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que,syn_que]
-    gui_process = Process(target=Gui, args=(queue_list, StopEVENT,))
+    cam1_que = queue.Queue(maxsize=1)
+    cam2_que = queue.Queue(maxsize=1)
+    cam2_info_que = queue.Queue(maxsize=1)
+    # syn_que = Queue(maxsize=2)
+    tof1_que = queue.Queue(maxsize=100)
+    tof2_que = queue.Queue(maxsize=100)
+    queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que]
+    gui_process = threading.Thread(target=Gui, args=(queue_list, StopEVENT,))
     gui_process.start()
     process_pool = []
     client_timer = 0
     while True:
         try:
             clientSock, addr = s.accept()
-            # clientSock.setblocking(False)
+            clientSock.setblocking(False)
         except BlockingIOError:
             # print('time out')
             continue
-        p = Process(target=get_data, args=(clientSock, addr, queue_list, StopEVENT,))
+        p = threading.Thread(target=get_data, args=(clientSock, addr, queue_list, StopEVENT,))
         process_pool.append(p)
         p.start()
         client_timer += 1
