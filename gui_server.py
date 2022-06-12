@@ -1,14 +1,13 @@
-import queue
 import socket
 import time
-from multiprocessing import Process, Queue, Event,Manager
+from multiprocessing import Process, Queue, Event, Manager
 
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
 from Gui_base import Gui_base
-from Gui_base import host, port ,CLIENT_NR
+from Gui_base import host, port, CLIENT_NR
 from tool import Buffer
 
 global pred_frame_bytes
@@ -34,7 +33,7 @@ class Gui(Gui_base):
         # asyncio.run_coroutine_threadsafe(t, self.loop)
         # self.root.update()
         self.Recoding_flag = False
-        self.timer=time.time()
+        self.timer = time.time()
         self.force_buffer = Buffer(20)
         codec = cv2.VideoWriter_fourcc(*'mp4v')
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
@@ -48,58 +47,57 @@ class Gui(Gui_base):
         while not self.StopEVENT.is_set():
             self.update_display()
             self.root.update()
-            self.root.after(10)
+            self.root.after(1)
         # self.root.mainloop()
 
     # @timer
     def update_display(self):
         # while not StopEVENT.is_set():
 
-        try:
-            if self.queue_list[1].empty():
-                return
-            bot_img = self.queue_list[1].get()
-            info = self.queue_list[4].get()
-            self.force_buffer.append(info[0])
-            top_img = self.queue_list[0].get()
-            self.queue_list[5].release()
-            self.queue_list[5].release()
-            # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
-            #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
-            # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
-            #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
-            # # frame0_1 = cv2.resize(cv2.cvtColor(self.breast_pred, cv2.COLOR_GRAY2RGB),
-            # frame0_1 = cv2.resize(test_img,
-            #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
-            # # frame1_1 = cv2.resize(cv2.imread('thresh.jpg'), (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
-            # frame1_1 = cv2.resize(test_img, (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        if self.queue_list[1].empty():
+            return
+        bot_img = self.queue_list[1].get()
+        info = self.queue_list[4].get()
+        self.force_buffer.append(info[0])
+        top_img = self.queue_list[0].get()
+        self.queue_list[5].release()
+        self.queue_list[5].release()
+        # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
+        #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
+        #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        # # frame0_1 = cv2.resize(cv2.cvtColor(self.breast_pred, cv2.COLOR_GRAY2RGB),
+        # frame0_1 = cv2.resize(test_img,
+        #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        # # frame1_1 = cv2.resize(cv2.imread('thresh.jpg'), (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        # frame1_1 = cv2.resize(test_img, (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
+        self.frame = np.concatenate((
+            # np.concatenate((top_img, bot_img), axis=0),
+            top_img,
+            bot_img
+            # np.concatenate((bot_img, bot_img), axis=0)
+        ), axis=1)
+        self.frame = ImageTk.PhotoImage(Image.fromarray(self.frame))
 
-            self.frame = np.concatenate((
-                np.concatenate((top_img, bot_img), axis=0),
-                np.concatenate((top_img, bot_img), axis=0)
-            ), axis=1)
-            self.frame = ImageTk.PhotoImage(Image.fromarray(self.frame))
+        self.display_panel.configure(image=self.frame)
+        most = int(self.force_buffer.most())
 
-            self.display_panel.configure(image=self.frame)
-            most = int(self.force_buffer.most())
+        if most > 5:
+            if self.Recoding_flag:
+                self.out_top.write(top_img)
+                self.out_bot.write(bot_img)
+        else:
+            if self.Recoding_flag:
+                self.pause_flag = True
+                self.out_top.release()
+                self.out_bot.release()
 
-            if most > 5:
-                if self.Recoding_flag:
-                    self.out_top.write(top_img)
-                    self.out_bot.write(bot_img)
-            else:
-                if self.Recoding_flag:
-                    self.pause_flag = True
-                    self.out_top.release()
-                    self.out_bot.release()
+                self.new_writer()
+        print('update lag =', time.time() - self.timer)
+        self.timer = time.time()
 
-                    self.new_writer()
-            print('update lag =',time.time()-self.timer)
-            self.timer =time.time()
-        except queue.Empty:
-            pass
-            # print('top:', self.queue_list[0].qsize())
-            # print('bot:', self.queue_list[1].qsize())
+        # print('top:', self.queue_list[0].qsize())
+        # print('bot:', self.queue_list[1].qsize())
 
     def recoding(self):
         self.Recoding_flag = not self.Recoding_flag
@@ -149,7 +147,6 @@ def get_data(c, addr, queue_list, StopEVENT):
 
             allLen = int.from_bytes(data[4: 8], byteorder='little')
             data_type = c.recv(4)
-
             if data_type == b'cam1':
                 img_conv = get_img(c, allLen)
                 if not queue_list[0].full():
@@ -177,12 +174,10 @@ def get_data(c, addr, queue_list, StopEVENT):
                 # cv2.imshow('pic', img_conv)
 
             if save_flag:
-                print(data_type, 'wait')
                 queue_list[5].acquire()
-                print(data_type, 'hi')
                 data = bytes('True', encoding='utf-8')
             else:
-                print(data_type,'wrong data')
+                print(data_type, 'wrong data')
                 data = bytes('False', encoding='utf-8')
             c.sendall(data)
             # print(data_type,time.time() - time_start)
@@ -197,28 +192,24 @@ def get_img(c, allLen):
     allData = b''
     # 通过循环获取完整图片数据
     while curSize < allLen:
-        data = c.recv(8192)
+        data = c.recv(8192*4)
 
-        # try:
-        # except BlockingIOError:
-        #     print('不完整？')
-        #     continue
         allData += data
         curSize += len(data)
     # 取出图片数据
     imgData = allData[0:]
-    if len(imgData) != (640 * 480 * 3):
-        print('no return')
+    # 640 * 480 * 3*2
+    if len(imgData) != 1843200:
+        print('no return', len(imgData))
         return None
     # bytes转PIL.Image
-    img = Image.frombuffer('RGB', (640, 480), imgData)
+    img = Image.frombuffer('RGB', (640, 960), imgData)
+
     # 传过来的图片被上下镜面了，将其返回来
     # img = img.transpose(Image.FLIP_TOP_BOTTOM)
     # PIL.Image转ndarray
     img_conv = np.array(img)
     return img_conv
-
-
 
 
 # 按间距中的绿色按钮以运行脚本。
@@ -237,7 +228,7 @@ if __name__ == '__main__':
     syn_que = Manager().Semaphore(0)
     tof1_que = Queue(maxsize=100)
     tof2_que = Queue(maxsize=100)
-    queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que,syn_que]
+    queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que, syn_que]
     gui_process = Process(target=Gui, args=(queue_list, StopEVENT,))
     gui_process.start()
     process_pool = []

@@ -97,7 +97,7 @@ def test_M(img):
     x, y, w, h = box
 
 if __name__ == '__main__':
-    img = cv2.imread('bot.jpg')
-    img = cv2.resize(img, (640, 480))
-    # get_bot_display(img)
+    # img = cv2.imread('bot.jpg')
+    # img = cv2.resize(img, (640, 480))
+    get_bot_display(None)
     get_M(img)

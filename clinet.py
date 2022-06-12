@@ -1,36 +1,52 @@
 import os
+import socket
 import time
+import pyrealsense2 as rs
+
+import cv2
+import numpy as np
+
+from Gui_base import host, port
+from tool import model_infer
+
 
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-import socket
-import numpy as np
-import cv2
-from tool import model_infer
-from Gui_base import host ,port
-
-
 
 def get_display():
-
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
     # v = cv2.VideoCapture(0)
-    img = cv2.imread('test.jpg')
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-    area_reader  = model_infer(
+
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
+    # Start streaming
+    pipeline.start(config)
+
+    # img = cv2.imread('test.jpg')
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # img = cv2.resize(img, (640, 480))
+
+    area_reader = model_infer(
         r'res34epoch=191-val_Iou=0.78.ckpt')
-    # send_data = cv2.resize(img, (640, 480)).tobytes()
     frame_number = 0
     while True:
+        frames = pipeline.wait_for_frames()
+        img = frames.get_color_frame()
+        img = np.asanyarray(img.get_data())
 
         t = time.time()
-        send_data=area_reader.forward(img).astype(
+        pred = area_reader.forward(img).astype(
             np.uint8)
 
+        pred = cv2.resize(pred, (640, 480))
+        send_data = np.concatenate((img, pred), axis=0)
+        send_data = send_data.tobytes()
 
-        send_data = cv2.resize(send_data, (640, 480)).tobytes()
+
 
         arrBuf = bytearray(b'\xff\xaa\xff\xaa')
         # if send_data is None:
@@ -40,7 +56,6 @@ def get_display():
 
         # 图片大小
         picSize = len(picBytes)
-
         # 数据体长度 = guid大小(固定) + 图片大小
         datalen = picSize
         data_type = b'cam1'
@@ -59,7 +74,6 @@ def get_display():
             break
         # print(time.time()-t)
     s.close()
-
 
 
 if __name__ == '__main__':

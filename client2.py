@@ -1,6 +1,7 @@
 import os
 import pickle
 import socket
+import time
 
 import cv2
 import numpy as np
@@ -110,8 +111,6 @@ def get_display():
     print(os.path.basename(__file__) + ' bind')
     img = cv2.imread('bot.jpg')
     img = cv2.resize(img, (640, 480))
-
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     frame_number = 0
     file_name = 'M.pkl'
 
@@ -123,10 +122,13 @@ def get_display():
         box = pickle.load(file)
     x, y, w, h = box
     while True:
+        t = time.time()
 
+        send_data = cv2.warpPerspective(img, M, (640, 480))
+        img_gray = cv2.cvtColor(send_data, cv2.COLOR_BGR2GRAY)
         height, force = OCR(img_gray)
-        send_data = cv2.warpPerspective(img, M, (w, h))
-        send_data = cv2.resize(send_data, (640, 480)).tobytes()
+
+        send_data = np.concatenate((send_data, img), axis=0).tobytes()
 
         height_b = bytes(height.to_bytes(4, byteorder='little'))
         force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
@@ -157,6 +159,7 @@ def get_display():
 
         except ConnectionResetError or ConnectionAbortedError:
             break
+        print(time.time()-t)
     s.close()
 
 
