@@ -1,3 +1,4 @@
+import pickle
 import socket
 import time
 from multiprocessing import Process, Queue, Event, Manager
@@ -9,8 +10,6 @@ from PIL import Image, ImageTk
 from Gui_base import Gui_base
 from Gui_base import host, port, CLIENT_NR
 from tool import Buffer
-
-global pred_frame_bytes
 
 
 def timer(func):
@@ -38,17 +37,30 @@ class Gui(Gui_base):
         codec = cv2.VideoWriter_fourcc(*'mp4v')
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.patient_idx = 0
-        self.pause_flag = True
+        self.recoding_stage = True
         self.out_top_path = f'patient{self.patient_idx}_top.mp4'
         self.out_bot_path = f'patient{self.patient_idx}_bot.mp4'
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
-
+        self.tl = []
+        self.tr = []
+        self.bl = []
+        self.br = []
+        self.pts1 = None
+        self.setup()
         while not self.StopEVENT.is_set():
             self.update_display()
             self.root.update()
             self.root.after(1)
         # self.root.mainloop()
+
+    def setup(self):
+        with open('001.pkl', 'rb') as look:
+            self.pts1 = pickle.load(look)
+
+        # with open('look_upT.pkl', 'rb') as look:
+        #     self.tl, self.tr, self.bl, self.br = pickle.load(look)
+        # print('[INFO] LOOK UP TABLE FINISHED')
 
     # @timer
     def update_display(self):
@@ -62,6 +74,13 @@ class Gui(Gui_base):
         top_img = self.queue_list[0].get()
         self.queue_list[5].release()
         self.queue_list[5].release()
+        img, pred = np.split(top_img, 2, axis=0)
+        b1, b2 = np.split(bot_img, 2, axis=0)
+        pts2 = np.float32([[0, 0], [480, 0], [0, 640], [480, 640]])
+
+        M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
+
+        img = cv2.warpPerspective(img, M, ( 640,480))
         # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
@@ -72,8 +91,8 @@ class Gui(Gui_base):
         # # frame1_1 = cv2.resize(cv2.imread('thresh.jpg'), (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         # frame1_1 = cv2.resize(test_img, (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         self.frame = np.concatenate((
-            # np.concatenate((top_img, bot_img), axis=0),
-            top_img,
+            np.concatenate((img, pred), axis=0),
+            # top_img,
             bot_img
             # np.concatenate((bot_img, bot_img), axis=0)
         ), axis=1)
@@ -84,15 +103,23 @@ class Gui(Gui_base):
 
         if most > 5:
             if self.Recoding_flag:
-                self.out_top.write(top_img)
-                self.out_bot.write(bot_img)
+                self.recoding_stage = True
+                self.Recoding_btn.configure(text='Recoding ON', bg='red')
+                self.Recoding_btn.update()
+                self.out_top.write(img)
+                self.out_bot.write(b1)
         else:
             if self.Recoding_flag:
-                self.pause_flag = True
-                self.out_top.release()
-                self.out_bot.release()
-
-                self.new_writer()
+                # want recording but Force is smaller than 5, go pause
+                if self.recoding_stage :
+                    self.out_top.release()
+                    self.out_bot.release()
+                    self.Recoding_btn.configure(text='Recoding PAUSE', bg='SystemButtonFace')
+                    self.Recoding_btn.update()
+                    self.new_writer()
+                    self.recoding_stage = False
+                else:
+                    pass
         print('update lag =', time.time() - self.timer)
         self.timer = time.time()
 
@@ -104,7 +131,9 @@ class Gui(Gui_base):
 
         if self.Recoding_flag:
             self.Recoding_btn.configure(text='Recoding ON', bg='red')
+            self.recoding_stage = False
         else:
+
             if self.out_top.isOpened():
                 self.out_top.release()
                 self.out_bot.release()
@@ -128,6 +157,8 @@ class Gui(Gui_base):
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
+
+
 
 
 def get_data(c, addr, queue_list, StopEVENT):
@@ -192,7 +223,7 @@ def get_img(c, allLen):
     allData = b''
     # 通过循环获取完整图片数据
     while curSize < allLen:
-        data = c.recv(8192*4)
+        data = c.recv(8192 * 4)
 
         allData += data
         curSize += len(data)

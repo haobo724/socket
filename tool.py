@@ -1,6 +1,6 @@
 import os
 import queue
-
+from matplotlib import pyplot as plt
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import segmentation_models_pytorch as smp
 import cv2
@@ -9,6 +9,11 @@ import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from PIL import Image
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+
+
+
 
 
 IMAGE_HEIGHT = 256  # 1096 originally  0.25
@@ -151,3 +156,25 @@ class model_infer():
         # plt.show()
 
         return thresh
+
+def Red_seg(img):
+    img = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+    lower_red = np.array([0, 43, 46])
+    upper_red = np.array([10, 255, 255])
+    result = cv2.inRange(img,lower_red,upper_red).astype(np.uint8)
+
+    result = np.dstack([result for _ in range(3)])
+
+    return result
+def get_regression(x, y):
+    # 将 x，y 分别增加一个轴，以满足 sklearn 中回归模型认可的数据
+    x = x.reshape(-1, 1)
+    y = y.reshape(-1, 1)
+    poly = PolynomialFeatures(degree=5)
+    X_poly = poly.fit_transform(x)
+    poly.fit(X_poly, y)
+
+    lin2 = LinearRegression()
+    lin2.fit(X_poly, y)
+
+    return poly, lin2

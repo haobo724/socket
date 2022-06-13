@@ -2,12 +2,11 @@ import os
 import socket
 import time
 import pyrealsense2 as rs
-
 import cv2
 import numpy as np
 
 from Gui_base import host, port
-from tool import model_infer
+from tool import model_infer , Red_seg
 
 
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
@@ -30,8 +29,8 @@ def get_display():
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # img = cv2.resize(img, (640, 480))
 
-    area_reader = model_infer(
-        r'res34epoch=191-val_Iou=0.78.ckpt')
+    # area_reader = model_infer(
+    #     r'res34epoch=191-val_Iou=0.78.ckpt')
     frame_number = 0
     while True:
         frames = pipeline.wait_for_frames()
@@ -39,11 +38,14 @@ def get_display():
         img = np.asanyarray(img.get_data())
 
         t = time.time()
-        pred = area_reader.forward(img).astype(
-            np.uint8)
+        # pred = area_reader.forward(img).astype( np.uint8)
+        pred = Red_seg(img).astype(np.uint8)
 
         pred = cv2.resize(pred, (640, 480))
         send_data = np.concatenate((img, pred), axis=0)
+
+        # cv2.imshow('red',send_data)
+        # cv2.waitKey(1)
         send_data = send_data.tobytes()
 
 
