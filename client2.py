@@ -109,13 +109,15 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    img = cv2.imread('bot.jpg')
-    img = cv2.resize(img, (640, 480))
+    v = cv2.VideoCapture(1)
+    # img = cv2.imread('bot.jpg')
+    # img = cv2.resize(img, (640, 480))
     frame_number = 0
     file_name = 'M.pkl'
 
     with open(file_name, 'rb') as file:
         M = pickle.load(file)
+        print(M)
     file_name = 'bot.pkl'
 
     with open(file_name, 'rb') as file:
@@ -123,14 +125,14 @@ def get_display():
     x, y, w, h = box
     while True:
         t = time.time()
-
+        ret ,img = v.read()
         send_data = cv2.warpPerspective(img, M, (640, 480))
         img_gray = cv2.cvtColor(send_data, cv2.COLOR_BGR2GRAY)
         height, force = OCR(img_gray)
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
 
-        height_b = bytes(height.to_bytes(4, byteorder='little'))
+        height_b = bytes(height.to_bytes(4, byteorder='little',signed=True))
         force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
         head = height_b + force_b
         # print(len(head))

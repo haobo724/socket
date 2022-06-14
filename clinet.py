@@ -1,7 +1,7 @@
 import os
 import socket
 import time
-import pyrealsense2 as rs
+# import pyrealsense2 as rs
 import cv2
 import numpy as np
 
@@ -16,30 +16,30 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    # v = cv2.VideoCapture(0)
-
-    pipeline = rs.pipeline()
-    config = rs.config()
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+    v = cv2.VideoCapture(0)
+    #
+    # pipeline = rs.pipeline()
+    # config = rs.config()
+    # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
     # Start streaming
-    pipeline.start(config)
+    # pipeline.start(config)
 
     # img = cv2.imread('test.jpg')
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # img = cv2.resize(img, (640, 480))
 
-    # area_reader = model_infer(
-    #     r'res34epoch=191-val_Iou=0.78.ckpt')
+    area_reader = model_infer(
+        r'res34epoch=191-val_Iou=0.78.ckpt')
     frame_number = 0
     while True:
-        frames = pipeline.wait_for_frames()
-        img = frames.get_color_frame()
-        img = np.asanyarray(img.get_data())
-
+        # frames = pipeline.wait_for_frames()
+        # img = frames.get_color_frame()
+        # img = np.asanyarray(img.get_data())
+        ret ,img = v.read()
         t = time.time()
-        # pred = area_reader.forward(img).astype( np.uint8)
-        pred = Red_seg(img).astype(np.uint8)
+        pred = area_reader.forward(img).astype( np.uint8)
+        # pred = Red_seg(img).astype(np.uint8)
 
         pred = cv2.resize(pred, (640, 480))
         send_data = np.concatenate((img, pred), axis=0)

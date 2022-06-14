@@ -28,6 +28,7 @@ def get_bot_display(img):
         if k == ord('q'):
             break
         elif k == ord('s'):
+            cv2.imwrite('bot_sample.jpg',frame_bot)
             x, y, w, h = cv2.selectROI('frame_bot', frame_bot, fromCenter=False)
             temp_turple = x, y, w, h
             break
@@ -37,7 +38,7 @@ def get_bot_display(img):
             pickle.dump(temp_turple, file)
     else:
         print('[INFO] Not select ROI ON display')
-
+    return frame_bot
 
 def OnMouseAction(event, x, y, flags, param):
     global x1, y1
@@ -99,5 +100,5 @@ def test_M(img):
 if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
-    get_bot_display(None)
+    img =get_bot_display(None)
     get_M(img)
