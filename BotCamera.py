@@ -2,7 +2,7 @@ import os
 import pickle
 import socket
 import time
-
+from Gui_base import CAMERA_PORT_TOP
 import cv2
 import numpy as np
 
@@ -111,20 +111,15 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(0)
-    # img = cv2.imread('bot.jpg')
-    # img = cv2.resize(img, (640, 480))
+    v = cv2.VideoCapture(CAMERA_PORT_TOP)
+
     frame_number = 0
     file_name = 'M.pkl'
 
     with open(file_name, 'rb') as file:
         M = pickle.load(file)
-        print(M)
     file_name = 'bot.pkl'
 
-    with open(file_name, 'rb') as file:
-        box = pickle.load(file)
-    x, y, w, h = box
     while True:
         t = time.time()
         ret ,img = v.read()

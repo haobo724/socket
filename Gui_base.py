@@ -18,6 +18,9 @@ FONT_COLOR = 'black'
 host = socket.gethostname()
 port = 12
 CLIENT_NR =2
+CAMERA_PORT_BOT = 0
+CAMERA_PORT_TOP = 1
+
 
 class Gui_base:
     def __init__(self, queue_list, StopEVENT):
@@ -52,7 +55,7 @@ class Gui_base:
         self.display_panel.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
 
         # original displayed image
-        self.no_img = cv2.cvtColor(cv2.imread('test.jpg'), cv2.COLOR_BGR2RGB)
+        self.no_img = cv2.cvtColor(cv2.imread('bot.jpg'), cv2.COLOR_BGR2RGB)
         ori = ImageTk.PhotoImage(Image.fromarray(np.array(self.no_img)))
         self.display_panel.configure(image=ori)
 

@@ -1,6 +1,6 @@
 import pickle
 from collections import deque
-
+from Gui_base import CAMERA_PORT_BOT
 import cv2
 import numpy as np
 
@@ -8,9 +8,11 @@ global point_List
 point_List = deque(maxlen=4)
 
 
+
+
 def get_bot_display(img):
     if img is None:
-        camera_bot = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT, cv2.CAP_DSHOW)
 
     file_name = 'bot.pkl'
     temp_turple = ()

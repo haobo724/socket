@@ -1,7 +1,7 @@
 import pickle,os
 from collections import deque
 # import pyrealsense2 as rs
-from tool import get_regression
+from Gui_base import CAMERA_PORT_TOP
 import cv2
 import numpy as np
 
@@ -117,7 +117,7 @@ def get_center(pt):
 
 def get_top_image(img):
     if img is None:
-        camera_bot = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        camera_bot = cv2.VideoCapture(CAMERA_PORT_TOP, cv2.CAP_DSHOW)
         # pipeline = rs.pipeline()
         # config = rs.config()
         # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)

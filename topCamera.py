@@ -4,9 +4,9 @@ import time
 # import pyrealsense2 as rs
 import cv2
 import numpy as np
+from Gui_base import host, port, CAMERA_PORT_BOT
 
-from Gui_base import host, port
-from tool import model_infer , Red_seg
+from tool import model_infer, Red_seg
 
 
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
@@ -16,7 +16,7 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(1)
+    v = cv2.VideoCapture(CAMERA_PORT_BOT)
     #
     # pipeline = rs.pipeline()
     # config = rs.config()
@@ -36,11 +36,11 @@ def get_display():
         # frames = pipeline.wait_for_frames()
         # img = frames.get_color_frame()
         # img = np.asanyarray(img.get_data())
-        ret ,img = v.read()
+        ret, img = v.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         t = time.time()
-        pred = area_reader.forward(img).astype( np.uint8)
+        pred = area_reader.forward(img).astype(np.uint8)
         # pred = Red_seg(img).astype(np.uint8)
 
         pred = cv2.resize(pred, (640, 480))
@@ -49,8 +49,6 @@ def get_display():
         # cv2.imshow('red',send_data)
         # cv2.waitKey(1)
         send_data = send_data.tobytes()
-
-
 
         arrBuf = bytearray(b'\xff\xaa\xff\xaa')
         # if send_data is None:
