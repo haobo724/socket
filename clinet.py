@@ -16,7 +16,7 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(0)
+    v = cv2.VideoCapture(1)
     #
     # pipeline = rs.pipeline()
     # config = rs.config()
@@ -37,6 +37,8 @@ def get_display():
         # img = frames.get_color_frame()
         # img = np.asanyarray(img.get_data())
         ret ,img = v.read()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         t = time.time()
         pred = area_reader.forward(img).astype( np.uint8)
         # pred = Red_seg(img).astype(np.uint8)

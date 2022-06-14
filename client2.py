@@ -8,7 +8,7 @@ import numpy as np
 
 from Gui_base import host, port
 
-template_dir = 'OCR_template'
+template_dir = 'OCR_template_hand'
 img_template = []
 if os.path.exists(template_dir):
     for i in range(10):
@@ -60,6 +60,7 @@ def OCR(imfrag):
 
     # if no connected component is detected, return ''
     if digitCnts == []:
+        print('no co')
         return -1, -1
     # sort using x direction
     idx = np.argsort(xloc)
@@ -102,14 +103,15 @@ def OCR(imfrag):
     else:
         pass
         # print(result)
-    return result, 10
+    return result, result
 
-
+def OCR_DEMO(img):
+    pass
 def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(1)
+    v = cv2.VideoCapture(0)
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
     frame_number = 0
@@ -126,8 +128,10 @@ def get_display():
     while True:
         t = time.time()
         ret ,img = v.read()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         send_data = cv2.warpPerspective(img, M, (640, 480))
-        img_gray = cv2.cvtColor(send_data, cv2.COLOR_BGR2GRAY)
+        img_gray = cv2.cvtColor(send_data, cv2.COLOR_RGB2GRAY)
         height, force = OCR(img_gray)
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()

@@ -70,7 +70,7 @@ class Gui(Gui_base):
             return
         bot_img = self.queue_list[1].get()
         info = self.queue_list[4].get()
-        self.force_buffer.append(info[0])
+        self.force_buffer.append(info[1])
         top_img = self.queue_list[0].get()
         self.queue_list[5].release()
         self.queue_list[5].release()
@@ -81,7 +81,10 @@ class Gui(Gui_base):
         M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
 
         img = cv2.warpPerspective(img, M, ( 640,480))
-        # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
+        self.height_value.configure(text="{:.1f} mm".format(info[0]))
+        self.compression_value.configure(text="{:.1f} N".format(info[1]))
+        self.area_value.configure(text="{:.3f} mm^2".format(-1))
+        self.Pressure_value.configure(text="{:.3f} N/mm^2".format(99))        # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))

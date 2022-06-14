@@ -29,8 +29,8 @@ def get_bot_display(img):
             break
         elif k == ord('s'):
             cv2.imwrite('bot_sample.jpg',frame_bot)
-            x, y, w, h = cv2.selectROI('frame_bot', frame_bot, fromCenter=False)
-            temp_turple = x, y, w, h
+            # x, y, w, h = cv2.selectROI('frame_bot', frame_bot, fromCenter=False)
+            # temp_turple = x, y, w, h
             break
     cv2.destroyAllWindows()
     if len(temp_turple):
@@ -50,12 +50,12 @@ def OnMouseAction(event, x, y, flags, param):
 
 
 def get_M(img):
-    file_name = 'bot.pkl'
-
-    with open(file_name, 'rb') as file:
-        box = pickle.load(file)
-    x, y, w, h = box
-
+    # file_name = 'bot.pkl'
+    #
+    # with open(file_name, 'rb') as file:
+    #     box = pickle.load(file)
+    # x, y, w, h = box
+    w,h=640,480
     cv2.namedWindow("image", cv2.WINDOW_AUTOSIZE)  # 设置窗口标题和大小
     # cv2.resizeWindow('image', 1000, 400)
     cv2.setMouseCallback("image", OnMouseAction, img)
