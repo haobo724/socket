@@ -4,8 +4,6 @@ import cv2
 import numpy as np
 from PIL import Image, ImageTk
 import socket
-global pred_frame_bytes
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 eps = 0.0001
 

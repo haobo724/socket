@@ -1,4 +1,4 @@
-import queue
+import torch
 import socket
 import time
 from multiprocessing import Process, Queue, Event
@@ -11,8 +11,7 @@ from Gui_base import Gui_base
 from Gui_base import host, port
 from tool import Buffer
 
-global pred_frame_bytes
-
+print(torch.cuda.is_available())
 
 def timer(func):
     def warp(*args, **kwargs):

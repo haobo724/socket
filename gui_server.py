@@ -2,7 +2,7 @@ import pickle
 import socket
 import time
 from multiprocessing import Process, Queue, Event, Manager
-
+import torch
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -11,6 +11,7 @@ from Gui_base import Gui_base
 from Gui_base import host, port, CLIENT_NR
 from tool import Buffer
 
+print('torch gpu:',torch.cuda.is_available())
 
 def timer(func):
     def warp(*args, **kwargs):
@@ -237,13 +238,14 @@ def get_img(c, allLen):
         print('no return', len(imgData))
         return None
     # bytes转PIL.Image
-    img = Image.frombuffer('RGB', (640, 960), imgData)
-
+    # img = Image.frombuffer('RGB', (640, 960), imgData)
+    img = np.frombuffer(imgData,dtype=np.uint8)
+    img = cv2.imdecode(img, cv2.IMREAD_COLOR)
     # 传过来的图片被上下镜面了，将其返回来
     # img = img.transpose(Image.FLIP_TOP_BOTTOM)
     # PIL.Image转ndarray
-    img_conv = np.array(img)
-    return img_conv
+    # img_conv = np.array(img,dtype=np.uint8)
+    return img
 
 
 # 按间距中的绿色按钮以运行脚本。

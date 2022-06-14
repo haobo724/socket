@@ -40,11 +40,11 @@ def get_display():
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         t = time.time()
-        pred = area_reader.forward(img).astype(np.uint8)
+        pred = area_reader.forward(img)
         # pred = Red_seg(img).astype(np.uint8)
 
-        pred = cv2.resize(pred, (640, 480))
-        send_data = np.concatenate((img, pred), axis=0)
+        pred = cv2.resize(pred, (640, 480)).astype(np.uint8)
+        send_data = np.concatenate((img, pred), axis=0).astype(np.uint8)
 
         # cv2.imshow('red',send_data)
         # cv2.waitKey(1)

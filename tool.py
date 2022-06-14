@@ -1,6 +1,5 @@
 import os
 import queue
-from matplotlib import pyplot as plt
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import segmentation_models_pytorch as smp
 import cv2

@@ -155,7 +155,7 @@ def get_display():
         try:
             rec_data = s.recv(64)
             print(str(rec_data, encoding='utf-8'))
-            print('c2:', frame_number)
+            print('\r c2:', frame_number,flush=True)
             frame_number += 1
 
         except ConnectionResetError or ConnectionAbortedError:
