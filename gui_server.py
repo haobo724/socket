@@ -237,14 +237,10 @@ def get_img(c, allLen):
     if len(imgData) != 1843200:
         print('no return', len(imgData))
         return None
-    # bytes转PIL.Image
-    # img = Image.frombuffer('RGB', (640, 960), imgData)
     img = np.frombuffer(imgData,dtype=np.uint8)
-    img = cv2.imdecode(img, cv2.IMREAD_COLOR)
-    # 传过来的图片被上下镜面了，将其返回来
-    # img = img.transpose(Image.FLIP_TOP_BOTTOM)
-    # PIL.Image转ndarray
-    # img_conv = np.array(img,dtype=np.uint8)
+    img = np.reshape(img,( 960,640,3),dtype=np.uint8)
+
+
     return img
 
 
