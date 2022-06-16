@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 
 from Gui_base import Gui_base
 from Gui_base import host, port, CLIENT_NR
+from recv import recv_client_data
 from tool import Buffer
 
 print('torch gpu:', torch.cuda.is_available())
@@ -75,8 +76,8 @@ class Gui(Gui_base):
         info = self.queue_list[4].get()
         self.force_buffer.append(info[1])
         top_img = self.queue_list[0].get()
-        self.queue_list[5].release()
-        self.queue_list[5].release()
+        for i in range(CLIENT_NR):
+            self.queue_list[5].release()
         img, pred = np.split(top_img, 2, axis=0)
         b1, b2 = np.split(bot_img, 2, axis=0)
         pts2 = np.float32([[0, 0], [480, 0], [0, 640], [480, 640]])
@@ -165,86 +166,6 @@ class Gui(Gui_base):
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
 
-
-def get_data(c, addr, queue_list, StopEVENT):
-    print('connect:', addr)
-    while not StopEVENT.is_set():
-        time_start = time.time()
-
-        str = c.recv(8)
-        save_flag = False
-        # try:
-        # except BlockingIOError:
-        #     print('不完整？')
-        #     continue
-        data = bytearray(str)
-        headIndex = data.find(b'\xff\xaa\xff\xaa')
-        if headIndex == 0:
-
-            allLen = int.from_bytes(data[4: 8], byteorder='little')
-            data_type = c.recv(4)
-            if data_type == b'cam1':
-                img_conv = get_img(c, allLen)
-                if not queue_list[0].full():
-                    queue_list[0].put(img_conv)
-                    save_flag = True
-            elif data_type == b'cam2':
-                height_force = c.recv(8)
-                height = int.from_bytes(height_force[0:4], byteorder='little', signed=True)
-                force = int.from_bytes(height_force[4:8], byteorder='little', signed=True)
-                info = (force, height)
-                img_conv = get_img(c, allLen)
-                if not queue_list[1].full():
-                    queue_list[1].put(img_conv)
-                    queue_list[4].put(info)
-                    save_flag = True
-
-            elif data_type == b'tof1':
-                img_conv = get_img(c, allLen)
-
-                queue_list[2].put(img_conv)
-            elif data_type == b'tof2':
-                img_conv = get_img(c, allLen)
-
-                queue_list[3].put(img_conv)
-                # cv2.imshow('pic', img_conv)
-
-            if save_flag:
-                queue_list[5].acquire()
-                data = bytes('True', encoding='utf-8')
-            else:
-                print(data_type, 'wrong data')
-                data = bytes('False', encoding='utf-8')
-            c.sendall(data)
-            # print(data_type,time.time() - time_start)
-
-    c.close()
-    print('disconnect:', addr)
-    return
-
-
-def get_img(c, allLen):
-    curSize = 0
-    allData = b''
-    # 通过循环获取完整图片数据
-    while curSize < allLen:
-        data = c.recv(8192 * 4)
-
-        allData += data
-        curSize += len(data)
-    # 取出图片数据
-    imgData = allData[0:]
-    # 640 * 480 * 3*2
-    if len(imgData) != 1843200:
-        print('no return', len(imgData))
-        return None
-    img = np.frombuffer(imgData, dtype=np.uint8)
-    img = np.reshape(img, (960, 640, 3), dtype=np.uint8)
-
-    return img
-
-
-# 按间距中的绿色按钮以运行脚本。
 if __name__ == '__main__':
     # pool = multiprocessing.Pool(processes=5)
     StopEVENT = Event()
@@ -258,8 +179,8 @@ if __name__ == '__main__':
     cam2_que = Queue(maxsize=1)
     cam2_info_que = Queue(maxsize=1)
     syn_que = Manager().Semaphore(0)
-    tof1_que = Queue(maxsize=100)
-    tof2_que = Queue(maxsize=100)
+    tof1_que = Queue(maxsize=1)
+    tof2_que = Queue(maxsize=1)
     queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que, syn_que]
     gui_process = Process(target=Gui, args=(queue_list, StopEVENT,))
     gui_process.start()
@@ -273,7 +194,7 @@ if __name__ == '__main__':
         except BlockingIOError:
             # print('time out')
             continue
-        p = Process(target=get_data, args=(clientSock, addr, queue_list, StopEVENT,))
+        p = Process(target=recv_client_data, args=(clientSock, addr, queue_list, StopEVENT,))
         process_pool.append(p)
         p.start()
         client_timer += 1
@@ -290,4 +211,3 @@ if __name__ == '__main__':
         p.kill()
     print('done')
 
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助

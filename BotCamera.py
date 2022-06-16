@@ -1,16 +1,21 @@
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import pickle
 import socket
 import time
-
+from paddleocr import PaddleOCR
 import cv2
 import numpy as np
-
+from gui_server import timer
 from Gui_base import CAMERA_PORT_TOP
 from Gui_base import host, port
 
-template_dir = 'OCR_template_hand'
+template_dir = 'OCR_template'
 img_template = []
+TEMPLATE_size = (50, 90)
+UPPER_NUMMER =200
+ocr = PaddleOCR(use_angle_cls=False, lang='en', use_gpu=True, rec_batch_num=10)
+
 if os.path.exists(template_dir):
     for i in range(10):
         img_file_path = os.path.join(template_dir, str(i) + '.jpg')
@@ -18,7 +23,7 @@ if os.path.exists(template_dir):
             img_file_path = os.path.join(template_dir, 'result_' + str(i) + '.tiff')
 
         t = cv2.imread(img_file_path, 0)
-        t = cv2.resize(t, (50, 90))
+        t = cv2.resize(t, TEMPLATE_size)
         img_template.append(t)
         print(f'[INFO] TEMPLATE {i} lOADED')
 else:
@@ -35,14 +40,21 @@ def get_match_score(img, template):
     # score =( np.sum(tp) + np.sum(tn)) / (np.sum(tp) + np.sum(tn) + np.sum(fp) + np.sum(fn))
     score = (np.sum(tp) + np.sum(tn) - np.sum(fp) - np.sum(fn))
     return score
+@timer
+def OCR_THIRD(img):
+    result = ocr.ocr(img,det=False, cls=False)
+    for line in result:
+        print(line)
 
-
+@timer
 def OCR(imfrag):
-    # new method of reading digits in the imfrag
+    '''
+    :return FORCE , HEIGHT
+    '''
     _, imfrag_h = imfrag.shape
 
     ret2, imfrag = cv2.threshold(imfrag, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    roi_size = (50, 90)
+    roi_size = TEMPLATE_size
     # detect single digit and detect
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))  # 定义矩形结构元素
 
@@ -99,7 +111,7 @@ def OCR(imfrag):
         result = int(digit)
     except ValueError:
         result = -1
-    if result > 200:
+    if result > UPPER_NUMMER:
         return -1, -1
     else:
         pass
@@ -107,8 +119,8 @@ def OCR(imfrag):
     return result, result
 
 
-def OCR_DEMO(img):
-    pass
+def block_split(img):
+    return img
 
 
 def get_display():
@@ -131,6 +143,7 @@ def get_display():
 
         send_data = cv2.warpPerspective(img, M, (640, 480))
         img_gray = cv2.cvtColor(send_data, cv2.COLOR_RGB2GRAY)
+
         height, force = OCR(img_gray)
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
@@ -169,4 +182,14 @@ def get_display():
 
 
 if __name__ == '__main__':
-    get_display()
+    # get_display()
+    img = cv2.imread('bot.jpg',0)
+
+    img=cv2.resize(img, (640, 480))
+    x,y,w,h = cv2.selectROI('roi', img)
+    img = img[y:y+h,x:x+w]
+
+
+    for i in range(7):
+        # OCR(img)
+        OCR_THIRD(img)
