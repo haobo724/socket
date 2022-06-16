@@ -1,9 +1,9 @@
-import os
+import socket
 import tkinter as tk
+
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-import socket
 
 eps = 0.0001
 

@@ -1,9 +1,11 @@
-import pickle,os
+import pickle
 from collections import deque
-# import pyrealsense2 as rs
-from Gui_base import CAMERA_PORT_TOP
+
 import cv2
 import numpy as np
+
+# import pyrealsense2 as rs
+from Gui_base import CAMERA_PORT_TOP
 
 global point_List
 point_List = deque(maxlen=4)

@@ -2,9 +2,10 @@ import pickle
 import socket
 import time
 from multiprocessing import Process, Queue, Event, Manager
-import torch
+
 import cv2
 import numpy as np
+import torch
 from PIL import Image, ImageTk
 
 from Gui_base import Gui_base

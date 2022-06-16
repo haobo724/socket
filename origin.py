@@ -1,8 +1,11 @@
 import os
 import socket
-from PIL import Image# 这是一个示例 Python 脚本。
-import numpy as np
+
 import cv2
+import numpy as np
+from PIL import Image  # 这是一个示例 Python 脚本。
+
+
 def get_display():
     host = socket.gethostname()
     port = 1234

@@ -1,10 +1,12 @@
-import torch
+import queue
 import socket
+import threading
 import time
-from multiprocessing import Process, Queue, Event
-import threading,queue
+from multiprocessing import Event
+
 import cv2
 import numpy as np
+import torch
 from PIL import Image, ImageTk
 
 from Gui_base import Gui_base

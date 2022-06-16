@@ -1,12 +1,13 @@
 import os
 import socket
 import time
+
 # import pyrealsense2 as rs
 import cv2
 import numpy as np
-from Gui_base import host, port, CAMERA_PORT_BOT
 
-from tool import model_infer, Red_seg
+from Gui_base import host, port, CAMERA_PORT_BOT
+from tool import model_infer
 
 
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"

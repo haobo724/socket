@@ -1,8 +1,10 @@
 import pickle
 from collections import deque
-from Gui_base import CAMERA_PORT_BOT
+
 import cv2
 import numpy as np
+
+from Gui_base import CAMERA_PORT_BOT
 
 global point_List
 point_List = deque(maxlen=4)

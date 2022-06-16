@@ -2,10 +2,11 @@ import os
 import pickle
 import socket
 import time
-from Gui_base import CAMERA_PORT_TOP
+
 import cv2
 import numpy as np
 
+from Gui_base import CAMERA_PORT_TOP
 from Gui_base import host, port
 
 template_dir = 'OCR_template_hand'
