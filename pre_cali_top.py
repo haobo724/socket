@@ -11,8 +11,6 @@ global point_List
 point_List = deque(maxlen=4)
 
 
-
-
 def OnMouseAction(event, x, y, flags, param):
     global x1, y1
     img = param
@@ -23,11 +21,10 @@ def OnMouseAction(event, x, y, flags, param):
 
 
 def get_4points():
-
-    file_name = ['001.jpg','050.jpg','100.jpg']
+    file_name = ['001.jpg', '050.jpg', '100.jpg']
     i = 0
 
-    img=cv2.imread(file_name[i])
+    img = cv2.imread(file_name[i])
 
     cv2.namedWindow("image", cv2.WINDOW_AUTOSIZE)  # 设置窗口标题和大小
     # cv2.resizeWindow('image', 1000, 400)
@@ -45,10 +42,10 @@ def get_4points():
             cv2.setMouseCallback('image', OnMouseAction, img)
             point_List.clear()
         if k == ord('s'):
-            with open(file_name[i].split('.')[0]+'.pkl','wb') as file :
+            with open(file_name[i].split('.')[0] + '.pkl', 'wb') as file:
                 saved = np.array(point_List)
                 print(saved)
-                pickle.dump(saved,file)
+                pickle.dump(saved, file)
                 point_List.clear()
             i += 1
             if i == 3:
@@ -63,21 +60,21 @@ def get_4points():
 
 
 def do_regression():
-    list1 =[]
-    list50 =[]
-    list100=[]
-    list_all = [list1,list50,list100]
-    file_name = ['001.pkl','050.pkl','100.pkl']
+    list1 = []
+    list50 = []
+    list100 = []
+    list_all = [list1, list50, list100]
+    file_name = ['001.pkl', '050.pkl', '100.pkl']
 
-    for l,name  in zip(list_all,file_name):
-        with open(name,'rb') as file :
+    for l, name in zip(list_all, file_name):
+        with open(name, 'rb') as file:
             l = pickle.load(file)
             get_center(l)
             print(l)
     print(list_all)
 
 
-def order_points_new( pts):
+def order_points_new(pts):
     # sort the points based on their x-coordinates
     try:
         assert len(pts) == 4
@@ -108,12 +105,12 @@ def order_points_new( pts):
 
 def get_center(pt):
     print(pt)
-    img = np.zeros((480,640),dtype=np.uint8)
+    img = np.zeros((480, 640), dtype=np.uint8)
 
     pt_new = order_points_new(pt)
     print(pt_new)
-    img = cv2.fillConvexPoly(img,np.array(pt_new,dtype=np.int32),255)
-    cv2.imshow('hi',img)
+    img = cv2.fillConvexPoly(img, np.array(pt_new, dtype=np.int32), 255)
+    cv2.imshow('hi', img)
     cv2.waitKey()
 
 
@@ -126,8 +123,8 @@ def get_top_image(img):
 
         # Start streaming
         # pipeline.start(config)
-    file_name = ['001.jpg','050.jpg','100.jpg']
-    i =0
+    file_name = ['001.jpg', '050.jpg', '100.jpg']
+    i = 0
     while True:
         if img is None:
             # frames = pipeline.wait_for_frames()
@@ -142,11 +139,12 @@ def get_top_image(img):
         k = cv2.waitKey(1)
 
         if k == ord('s'):
-            cv2.imwrite(file_name[i],frame_bot)
-            i+=1
+            cv2.imwrite(file_name[i], frame_bot)
+            i += 1
         if k == ord('q'):
             break
     cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')

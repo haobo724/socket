@@ -15,6 +15,7 @@ from tool import Buffer
 
 print(torch.cuda.is_available())
 
+
 def timer(func):
     def warp(*args, **kwargs):
         start = time.time()

@@ -15,14 +15,13 @@ FONT_SIZE = 18
 FONT_COLOR = 'black'
 host = socket.gethostname()
 port = 12
-CLIENT_NR =2
+CLIENT_NR = 2
 CAMERA_PORT_BOT = 0
 CAMERA_PORT_TOP = 1
 
 
 class Gui_base:
     def __init__(self, queue_list, StopEVENT):
-
         self.StopEVENT = StopEVENT
         # containers for images and detected parameters
         self.breast_img = None
@@ -197,7 +196,6 @@ class Gui_base:
         self.exit_btn.grid(row=13)
         self.queue_list = queue_list
 
-
     def get_loop(self, loop):
         pass
 
@@ -218,6 +216,7 @@ class Gui_base:
 
     def measure_breast_area(self):
         pass
+
     # @timer
     def update_display(self):
         pass

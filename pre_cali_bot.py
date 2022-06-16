@@ -10,8 +10,6 @@ global point_List
 point_List = deque(maxlen=4)
 
 
-
-
 def get_bot_display(img):
     if img is None:
         camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT, cv2.CAP_DSHOW)
@@ -32,7 +30,7 @@ def get_bot_display(img):
         if k == ord('q'):
             break
         elif k == ord('s'):
-            cv2.imwrite('bot_sample.jpg',frame_bot)
+            cv2.imwrite('bot_sample.jpg', frame_bot)
             # x, y, w, h = cv2.selectROI('frame_bot', frame_bot, fromCenter=False)
             # temp_turple = x, y, w, h
             break
@@ -43,6 +41,7 @@ def get_bot_display(img):
     else:
         print('[INFO] Not select ROI ON display')
     return frame_bot
+
 
 def OnMouseAction(event, x, y, flags, param):
     global x1, y1
@@ -59,7 +58,7 @@ def get_M(img):
     # with open(file_name, 'rb') as file:
     #     box = pickle.load(file)
     # x, y, w, h = box
-    w,h=640,480
+    w, h = 640, 480
     cv2.namedWindow("image", cv2.WINDOW_AUTOSIZE)  # 设置窗口标题和大小
     # cv2.resizeWindow('image', 1000, 400)
     cv2.setMouseCallback("image", OnMouseAction, img)
@@ -87,9 +86,11 @@ def get_M(img):
     # cv2.resizeWindow('image', 1000, 400)
     cv2.imshow("img_new", img_new)
     cv2.waitKey()
-    file_name ='M.pkl'
+    file_name = 'M.pkl'
     with open(file_name, 'wb') as file:
         pickle.dump(M, file)
+
+
 def test_M(img):
     file_name = 'M.pkl'
 
@@ -101,8 +102,9 @@ def test_M(img):
         box = pickle.load(file)
     x, y, w, h = box
 
+
 if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
-    img =get_bot_display(None)
+    img = get_bot_display(None)
     get_M(img)

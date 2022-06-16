@@ -1,6 +1,7 @@
 import os
 import queue
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import segmentation_models_pytorch as smp
 import cv2
 import numpy as np
@@ -11,24 +12,21 @@ from PIL import Image
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-
-
-
-
 IMAGE_HEIGHT = 256  # 1096 originally  0.25
 IMAGE_WIDTH = 448  # 1936 originall
+
+
 class Buffer():
-    def __init__(self,size):
-        self.q  = queue.Queue(size)
+    def __init__(self, size):
+        self.q = queue.Queue(size)
         self.list = []
 
-    def __getitem__(self,num):
+    def __getitem__(self, num):
         if num > len(self.list):
             raise IndexError('list index out of range')
         return self.list[num]
 
-
-    def append(self,num):
+    def append(self, num):
         if not self.q.full():
             self.q.put(num)
             self.list.append(num)
@@ -37,14 +35,17 @@ class Buffer():
             self.q.put(num)
             del self.list[0]
             self.list.append(num)
+
     def mean(self):
         if self.q.empty():
             return 0
         return np.mean(self.list)
+
     def most(self):
         vals, counts = np.unique(self.list, return_counts=True)
         index = np.argmax(counts)
         return vals[index]
+
 
 def mapping_color_tensor(img):
     '''
@@ -65,6 +66,7 @@ def mapping_color_tensor(img):
     if torch.is_tensor(img):
         return img
     return img.astype(int)
+
 
 class model_infer():
     def __init__(self, models):
@@ -156,15 +158,18 @@ class model_infer():
 
         return thresh
 
+
 def Red_seg(img):
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     lower_red = np.array([0, 43, 46])
     upper_red = np.array([10, 255, 255])
-    result = cv2.inRange(img,lower_red,upper_red).astype(np.uint8)
+    result = cv2.inRange(img, lower_red, upper_red).astype(np.uint8)
 
     result = np.dstack([result for _ in range(3)])
 
     return result
+
+
 def get_regression(x, y):
     # 将 x，y 分别增加一个轴，以满足 sklearn 中回归模型认可的数据
     x = x.reshape(-1, 1)

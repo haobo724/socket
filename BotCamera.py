@@ -106,8 +106,11 @@ def OCR(imfrag):
         # print(result)
     return result, result
 
+
 def OCR_DEMO(img):
     pass
+
+
 def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
@@ -123,7 +126,7 @@ def get_display():
 
     while True:
         t = time.time()
-        ret ,img = v.read()
+        ret, img = v.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         send_data = cv2.warpPerspective(img, M, (640, 480))
@@ -132,7 +135,7 @@ def get_display():
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
 
-        height_b = bytes(height.to_bytes(4, byteorder='little',signed=True))
+        height_b = bytes(height.to_bytes(4, byteorder='little', signed=True))
         force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
         head = height_b + force_b
         # print(len(head))
@@ -156,12 +159,12 @@ def get_display():
         try:
             rec_data = s.recv(64)
             print(str(rec_data, encoding='utf-8'))
-            print('\r c2:', frame_number,flush=True)
+            print('\r c2:', frame_number, flush=True)
             frame_number += 1
 
         except ConnectionResetError or ConnectionAbortedError:
             break
-        print(time.time()-t)
+        print(time.time() - t)
     s.close()
 
 

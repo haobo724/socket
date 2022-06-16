@@ -12,7 +12,8 @@ from Gui_base import Gui_base
 from Gui_base import host, port, CLIENT_NR
 from tool import Buffer
 
-print('torch gpu:',torch.cuda.is_available())
+print('torch gpu:', torch.cuda.is_available())
+
 
 def timer(func):
     def warp(*args, **kwargs):
@@ -82,11 +83,12 @@ class Gui(Gui_base):
 
         M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
 
-        img = cv2.warpPerspective(img, M, ( 640,480))
+        img = cv2.warpPerspective(img, M, (640, 480))
         self.height_value.configure(text="{:.1f} mm".format(info[0]))
         self.compression_value.configure(text="{:.1f} N".format(info[1]))
         self.area_value.configure(text="{:.3f} mm^2".format(-1))
-        self.Pressure_value.configure(text="{:.3f} N/mm^2".format(99))        # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
+        self.Pressure_value.configure(
+            text="{:.3f} N/mm^2".format(99))  # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         # frame1_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
@@ -116,7 +118,7 @@ class Gui(Gui_base):
         else:
             if self.Recoding_flag:
                 # want recording but Force is smaller than 5, go pause
-                if self.recoding_stage :
+                if self.recoding_stage:
                     self.out_top.release()
                     self.out_bot.release()
                     self.Recoding_btn.configure(text='Recoding PAUSE', bg='SystemButtonFace')
@@ -162,8 +164,6 @@ class Gui(Gui_base):
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
-
-
 
 
 def get_data(c, addr, queue_list, StopEVENT):
@@ -238,9 +238,8 @@ def get_img(c, allLen):
     if len(imgData) != 1843200:
         print('no return', len(imgData))
         return None
-    img = np.frombuffer(imgData,dtype=np.uint8)
-    img = np.reshape(img,( 960,640,3),dtype=np.uint8)
-
+    img = np.frombuffer(imgData, dtype=np.uint8)
+    img = np.reshape(img, (960, 640, 3), dtype=np.uint8)
 
     return img
 
