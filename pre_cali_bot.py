@@ -9,7 +9,7 @@ from Gui_base import CAMERA_PORT_BOT
 global point_List
 point_List = deque(maxlen=4)
 
-
+print(cv2.__version__)
 def get_bot_display(img):
     if img is None:
         camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT, cv2.CAP_DSHOW)
@@ -91,20 +91,24 @@ def get_M(img):
         pickle.dump(M, file)
 
 
-def test_M(img):
-    file_name = 'M.pkl'
+def get_force_height_area(img):
+    file_name = 'force.pkl'
+    force_file = cv2.selectROI('roi', img)
+    with open(file_name, 'wb') as file:
+        pickle.dump(force_file, file)
+    file_name = 'height.pkl'
 
-    with open(file_name, 'rb') as file:
-        M = pickle.load(file)
-    file_name = 'bot.pkl'
+    height_file = cv2.selectROI('roi', img)
+    with open(file_name, 'wb') as file:
+        pickle.dump(height_file, file)
+def get_whole_display(img):
+    file_name = 'display.pkl'
 
-    with open(file_name, 'rb') as file:
-        box = pickle.load(file)
-    x, y, w, h = box
-
-
+    display_file = cv2.selectROI('roi', img)
+    with open(file_name, 'wb') as file:
+        pickle.dump(display_file, file)
 if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
     img = get_bot_display(None)
-    get_M(img)
+    get_whole_display(img)

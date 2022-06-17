@@ -14,7 +14,7 @@ template_dir = 'OCR_template'
 img_template = []
 TEMPLATE_size = (50, 90)
 UPPER_NUMMER =200
-ocr = PaddleOCR(use_angle_cls=False, lang='en', use_gpu=True, rec_batch_num=10)
+ocr = PaddleOCR(use_angle_cls=False, lang='en',use_gpu=True, det=False, rec_batch_num=5)
 
 if os.path.exists(template_dir):
     for i in range(10):
@@ -42,9 +42,10 @@ def get_match_score(img, template):
     return score
 @timer
 def OCR_THIRD(img):
-    result = ocr.ocr(img,det=False, cls=False)
+    result = ocr.ocr(img, cls=False,det=False)
     for line in result:
         print(line)
+    # return int(result[0][0])
 
 @timer
 def OCR(imfrag):
@@ -134,17 +135,26 @@ def get_display():
 
     with open(file_name, 'rb') as file:
         M = pickle.load(file)
-    file_name = 'bot.pkl'
-
+    file_name = 'height.pkl'
+    with open(file_name, 'rb') as file:
+        x1, y1, w1, h1 = pickle.load(file)
+    file_name = 'force.pkl'
+    with open(file_name, 'rb') as file:
+        x2, y2, w2, h2 = pickle.load(file)
+    file_name = 'display.pkl'
+    with open(file_name, 'rb') as file:
+        x3, y3, w3, h3 = pickle.load(file)
     while True:
         t = time.time()
         ret, img = v.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        send_data = cv2.warpPerspective(img, M, (640, 480))
-        img_gray = cv2.cvtColor(send_data, cv2.COLOR_RGB2GRAY)
-
-        height, force = OCR(img_gray)
+        send_data  = cv2.resize(img[y3:y3+h3,x3:x3+w3,:], (640, 480))
+        # send_data = cv2.warpPerspective(img, M, (640, 480))
+        # img_gray = cv2.cvtColor(send_data, cv2.COLOR_RGB2GRAY)
+        force_block = img[y2:y2+h2,x2:x2+w2,:]
+        height_block = img[y1:y1+h1,x1:x1+w1,:]
+        height = OCR_THIRD(height_block)
+        force = OCR_THIRD(force_block)
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
 
@@ -183,13 +193,31 @@ def get_display():
 
 if __name__ == '__main__':
     # get_display()
-    img = cv2.imread('bot.jpg',0)
-
-    img=cv2.resize(img, (640, 480))
-    x,y,w,h = cv2.selectROI('roi', img)
-    img = img[y:y+h,x:x+w]
-
-
-    for i in range(7):
-        # OCR(img)
-        OCR_THIRD(img)
+    # img = cv2.imread('bot.jpg',0)
+    #
+    #
+    #
+    # img=cv2.resize(img, (640, 480))
+    # x,y,w,h = cv2.selectROI('roi', img)
+    # img = img[y:y+h,x:x+w]
+    #
+    #
+    v = cv2.VideoCapture(CAMERA_PORT_TOP)
+    file_name = 'height.pkl'
+    with open(file_name, 'rb') as file:
+        x1, y1, w1, h1 = pickle.load(file)
+    file_name = 'force.pkl'
+    with open(file_name, 'rb') as file:
+        x2, y2, w2, h2 = pickle.load(file)
+    file_name = 'display.pkl'
+    with open(file_name, 'rb') as file:
+        x3, y3, w3, h3 = pickle.load(file)
+    while True:
+        t = time.time()
+        ret, img = v.read()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        send_data = cv2.resize(img[y3:y3 + h3, x3:x3 + w3, :], (640, 480))
+        force_block = img[y2:y2 + h2, x2:x2 + w2, :]
+        height_block = img[y1:y1 + h1, x1:x1 + w1, :]
+        height = OCR_THIRD(height_block)
+        force = OCR_THIRD(force_block)

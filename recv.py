@@ -94,6 +94,6 @@ def get_img(c, allLen):
         print('no return', len(imgData))
         return None
     img = np.frombuffer(imgData, dtype=np.uint8)
-    img = np.reshape(img, (960, 640, 3), dtype=np.uint8)
+    img = np.reshape(img, (960, 640, 3))
 
     return img
