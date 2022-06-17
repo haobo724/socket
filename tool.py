@@ -71,7 +71,7 @@ def mapping_color_tensor(img):
 class model_infer():
     def __init__(self, models):
         # self.model = unet_train.load_from_checkpoint(models)
-        self.model_CKPT = torch.load(models)
+        self.model_CKPT = torch.load(models,map_location='cpu' )
 
         if torch.cuda.is_available():
             self.DEVICE = torch.device('cuda')

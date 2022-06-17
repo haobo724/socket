@@ -14,7 +14,7 @@ template_dir = 'OCR_template'
 img_template = []
 TEMPLATE_size = (50, 90)
 UPPER_NUMMER =200
-ocr = PaddleOCR(use_angle_cls=False, lang='en',use_gpu=True, det=False, rec_batch_num=5)
+ocr = PaddleOCR(use_angle_cls=False, lang='en',use_gpu=True,gpu_mem=200, det=False, rec_batch_num=5)
 
 if os.path.exists(template_dir):
     for i in range(10):

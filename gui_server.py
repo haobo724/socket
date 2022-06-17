@@ -182,8 +182,8 @@ if __name__ == '__main__':
     tof1_que = Queue(maxsize=1)
     tof2_que = Queue(maxsize=1)
     queue_list = [cam1_que, cam2_que, tof1_que, tof2_que, cam2_info_que, syn_que]
-    gui_process = Process(target=Gui, args=(queue_list, StopEVENT,))
-    gui_process.start()
+    # gui_process = Process(target=Gui, args=(queue_list, StopEVENT,))
+    # gui_process.start()
     process_pool = []
     client_timer = 0
     while True:
@@ -201,11 +201,13 @@ if __name__ == '__main__':
         if client_timer == CLIENT_NR:
             print('stop')
             break
+    a = Gui(queue_list, StopEVENT)
+
     while not StopEVENT.is_set():
         pass
     s.close()
-    gui_process.join()
-    gui_process.close()
+    # gui_process.join()
+    # gui_process.close()
 
     for p in process_pool:
         p.kill()
