@@ -6,7 +6,7 @@ import time
 import cv2
 import numpy as np
 
-from Gui_base import host, port, CAMERA_PORT_BOT
+from Gui_base import host, port, CAMERA_PORT_TOP
 from tool import model_infer
 
 
@@ -17,7 +17,7 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(CAMERA_PORT_BOT)
+    v = cv2.VideoCapture(CAMERA_PORT_TOP)
     #
     # pipeline = rs.pipeline()
     # config = rs.config()

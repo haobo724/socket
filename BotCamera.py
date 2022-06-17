@@ -48,7 +48,7 @@ def OCR_THIRD(img):
     result = result[0][0]
     try:
         result = int(result[0][0])
-    except ValueError:
+    except ValueError or IndexError:
         result = -1
     return result
 
