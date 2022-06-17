@@ -7,7 +7,7 @@ from paddleocr import PaddleOCR
 import cv2
 import numpy as np
 from gui_server import timer
-from Gui_base import CAMERA_PORT_TOP
+from Gui_base import CAMERA_PORT_BOT
 from Gui_base import host, port
 
 template_dir = 'OCR_template'
@@ -45,7 +45,12 @@ def OCR_THIRD(img):
     result = ocr.ocr(img, cls=False,det=False)
     for line in result:
         print(line)
-    # return int(result[0][0])
+    result = result[0][0]
+    try:
+        result = int(result[0][0])
+    except ValueError:
+        result = -1
+    return result
 
 @timer
 def OCR(imfrag):
@@ -128,7 +133,7 @@ def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
-    v = cv2.VideoCapture(CAMERA_PORT_TOP)
+    v = cv2.VideoCapture(CAMERA_PORT_BOT,cv2.CAP_DSHOW)
 
     frame_number = 0
     file_name = 'M.pkl'
@@ -192,7 +197,7 @@ def get_display():
 
 
 if __name__ == '__main__':
-    # get_display()
+    get_display()
     # img = cv2.imread('bot.jpg',0)
     #
     #
@@ -202,22 +207,22 @@ if __name__ == '__main__':
     # img = img[y:y+h,x:x+w]
     #
     #
-    v = cv2.VideoCapture(CAMERA_PORT_TOP)
-    file_name = 'height.pkl'
-    with open(file_name, 'rb') as file:
-        x1, y1, w1, h1 = pickle.load(file)
-    file_name = 'force.pkl'
-    with open(file_name, 'rb') as file:
-        x2, y2, w2, h2 = pickle.load(file)
-    file_name = 'display.pkl'
-    with open(file_name, 'rb') as file:
-        x3, y3, w3, h3 = pickle.load(file)
-    while True:
-        t = time.time()
-        ret, img = v.read()
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        send_data = cv2.resize(img[y3:y3 + h3, x3:x3 + w3, :], (640, 480))
-        force_block = img[y2:y2 + h2, x2:x2 + w2, :]
-        height_block = img[y1:y1 + h1, x1:x1 + w1, :]
-        height = OCR_THIRD(height_block)
-        force = OCR_THIRD(force_block)
+    # v = cv2.VideoCapture(CAMERA_PORT_BOT,cv2.CAP_DSHOW)
+    # file_name = 'height.pkl'
+    # with open(file_name, 'rb') as file:
+    #     x1, y1, w1, h1 = pickle.load(file)
+    # file_name = 'force.pkl'
+    # with open(file_name, 'rb') as file:
+    #     x2, y2, w2, h2 = pickle.load(file)
+    # file_name = 'display.pkl'
+    # with open(file_name, 'rb') as file:
+    #     x3, y3, w3, h3 = pickle.load(file)
+    # while True:
+    #     t = time.time()
+    #     ret, img = v.read()
+    #     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #     send_data = cv2.resize(img[y3:y3 + h3, x3:x3 + w3, :], (640, 480))
+    #     force_block = img[y2:y2 + h2, x2:x2 + w2, :]
+    #     height_block = img[y1:y1 + h1, x1:x1 + w1, :]
+    #     height = OCR_THIRD(height_block)
+    #     force = OCR_THIRD(force_block)

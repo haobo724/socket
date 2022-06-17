@@ -111,4 +111,5 @@ if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
     img = get_bot_display(None)
-    get_whole_display(img)
+    get_force_height_area(img)
+    # get_whole_display(img)
