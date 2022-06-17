@@ -40,7 +40,6 @@ def get_match_score(img, template):
     # score =( np.sum(tp) + np.sum(tn)) / (np.sum(tp) + np.sum(tn) + np.sum(fp) + np.sum(fn))
     score = (np.sum(tp) + np.sum(tn) - np.sum(fp) - np.sum(fn))
     return score
-@timer
 def OCR_THIRD(img):
     result = ocr.ocr(img, cls=False,det=False)
     for line in result:
@@ -48,7 +47,7 @@ def OCR_THIRD(img):
     result = result[0][0]
     try:
         result = int(result[0][0])
-    except ValueError:
+    except ValueError or IndexError:
         result = -1
     return result
 
