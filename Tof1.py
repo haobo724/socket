@@ -35,6 +35,11 @@ def get_tof(serialport='COM4', data_list=[]):
             data = dataraw[-44:]
             identifier = data[44 - 7]
 
+            # try:
+            #     identifier = data[44 - 7]
+            # except:
+            #     continue
+
             # print('Sensor ID : ',identifier)
             # status = int.from_bytes(data[44 - 12:44 - 9], 'little')
             # print('Sensorstatus: ', status)
@@ -69,7 +74,7 @@ def get_tof(serialport='COM4', data_list=[]):
                 print(len(a))
                 tof_signal = np.frombuffer(a)
                 b = np.reshape(tof_signal,((4, 4, 8))).copy()
-                b[0][0][0]=1
+                # b[0][0][0]=1
                 print(distarray)
                 print(b)
                 assert distarray.all()==b.all()
