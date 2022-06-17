@@ -40,7 +40,6 @@ def get_match_score(img, template):
     # score =( np.sum(tp) + np.sum(tn)) / (np.sum(tp) + np.sum(tn) + np.sum(fp) + np.sum(fn))
     score = (np.sum(tp) + np.sum(tn) - np.sum(fp) - np.sum(fn))
     return score
-@timer
 def OCR_THIRD(img):
     result = ocr.ocr(img, cls=False,det=False)
     for line in result:
