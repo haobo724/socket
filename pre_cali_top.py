@@ -116,7 +116,7 @@ def get_center(pt):
 
 def get_top_image(img):
     if img is None:
-        camera_bot = cv2.VideoCapture(CAMERA_PORT_TOP, cv2.CAP_DSHOW)
+        camera_top = cv2.VideoCapture(CAMERA_PORT_TOP, cv2.CAP_DSHOW)
         # pipeline = rs.pipeline()
         # config = rs.config()
         # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -130,16 +130,16 @@ def get_top_image(img):
             # frames = pipeline.wait_for_frames()
             # frame_bot = frames.get_color_frame()
             # frame_bot = np.asanyarray(frame_bot.get_data())
-            ret2, frame_bot = camera_bot.read()
+            ret2, frame_top = camera_top.read()
         else:
-            frame_bot = img
+            frame_top = img
         # frame_bot = np.rot90(frame_bot, 2)
 
-        cv2.imshow('frame_bot', frame_bot)
+        cv2.imshow('frame_top', frame_top)
         k = cv2.waitKey(1)
 
         if k == ord('s'):
-            cv2.imwrite(file_name[i], frame_bot)
+            cv2.imwrite(file_name[i], frame_top)
             i += 1
         if k == ord('q'):
             break
@@ -149,6 +149,6 @@ def get_top_image(img):
 if __name__ == '__main__':
     # img = cv2.imread('bot.jpg')
     # img = cv2.resize(img, (640, 480))
-    # get_top_image(None)
-    # get_4points()
-    do_regression()
+    get_top_image(None)
+    get_4points()
+    # do_regression()

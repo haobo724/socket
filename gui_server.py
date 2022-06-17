@@ -81,10 +81,9 @@ class Gui(Gui_base):
         img, pred = np.split(top_img, 2, axis=0)
         b1, b2 = np.split(bot_img, 2, axis=0)
         pts2 = np.float32([[0, 0], [480, 0], [0, 640], [480, 640]])
+        # M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
 
-        M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
-
-        img = cv2.warpPerspective(img, M, (640, 480))
+        # img = cv2.warpPerspective(img, M, (640, 480))
         self.height_value.configure(text="{:.1f} mm".format(info[0]))
         self.compression_value.configure(text="{:.1f} N".format(info[1]))
         self.area_value.configure(text="{:.3f} mm^2".format(-1))
@@ -203,8 +202,7 @@ if __name__ == '__main__':
             break
     a = Gui(queue_list, StopEVENT)
 
-    while not StopEVENT.is_set():
-        pass
+
     s.close()
     # gui_process.join()
     # gui_process.close()

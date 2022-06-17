@@ -103,8 +103,8 @@ class model_infer():
             [
                 A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
                 A.Normalize(
-                    mean=[0.0, 0.0, 0.0],
-                    std=[1.0, 1.0, 1.0],
+                    mean=[0.2947, 0.3138, 0.3603],
+                    std=[0.2789, 0.3044, 0.3409],
                     max_pixel_value=255.0,
                 ),
                 ToTensorV2(),

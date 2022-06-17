@@ -10,9 +10,12 @@ global point_List
 point_List = deque(maxlen=4)
 
 print(cv2.__version__)
+camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT)
+camera_bot.set(cv2.CAP_PROP_BRIGHTNESS,100)
+camera_bot.set(cv2.CAP_PROP_EXPOSURE,-7)
+print(camera_bot.get(cv2.CAP_PROP_EXPOSURE))
+print(camera_bot.get(cv2.CAP_PROP_BRIGHTNESS))
 def get_bot_display(img):
-    if img is None:
-        camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT, cv2.CAP_DSHOW)
 
     file_name = 'bot.pkl'
     temp_turple = ()
@@ -23,7 +26,7 @@ def get_bot_display(img):
         else:
             frame_bot = img
         # frame_bot = np.rot90(frame_bot, 2)
-
+        frame_bot = np.rot90(frame_bot,k=-2)
         cv2.imshow('frame_bot', frame_bot)
         k = cv2.waitKey(1)
 
@@ -112,4 +115,4 @@ if __name__ == '__main__':
     # img = cv2.resize(img, (640, 480))
     img = get_bot_display(None)
     get_force_height_area(img)
-    # get_whole_display(img)
+    get_whole_display(img)
