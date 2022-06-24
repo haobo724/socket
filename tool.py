@@ -237,8 +237,8 @@ def Red_seg(img):
 
 def Green_seg(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    lower_Green = np.array([80, 30, 30])
-    upper_Green = np.array([100, 255, 255])
+    lower_Green = np.array([70, 20, 20])
+    upper_Green = np.array([120, 255, 255])
     result = cv2.inRange(img, lower_Green, upper_Green).astype(np.uint8)
 
     result = np.dstack([result for _ in range(3)])

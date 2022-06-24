@@ -16,8 +16,8 @@ FONT_COLOR = 'black'
 host = socket.gethostname()
 port = 12
 CLIENT_NR = 2
-CAMERA_PORT_BOT = 0
-CAMERA_PORT_TOP = 1
+CAMERA_PORT_BOT = 1
+CAMERA_PORT_TOP = 0
 
 
 class Gui_base:

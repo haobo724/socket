@@ -2,6 +2,7 @@ import glob
 import os
 
 # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+import numpy as np
 import torch
 from paddleocr import PaddleOCR,draw_ocr
 import cv2
@@ -45,9 +46,16 @@ def run_classic():
 
         img = Green_seg(frame)
         img=cv2.cvtColor(img , cv2.COLOR_RGB2GRAY)
-        cnts, _ = cv2.findContours(img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        cv2.imshow('green', img)
+        contours, _ = cv2.findContours(img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[0]
+        blank = np.zeros_like(img)
+        rect = cv2.minAreaRect(contours)
+        box= cv2.boxPoints(rect).astype(int)
+        for p in box:
+            p = tuple(p)
+            cv2.circle(blank, p, 10, (255, 0, 0), -1)
+        # cv2.drawContours(blank, [contours], -1, (255, 255, 255), -1)
+        cv2.imshow('green', blank)
         k = cv2.waitKey(1)
         if k == ord('q'):
             break
@@ -72,6 +80,7 @@ def split(path):
 
 
 if __name__ == '__main__':
-    mp4 = glob.glob('*.mp4')
-    for i in mp4:
-        split(i)
+    run_classic()
+    # mp4 = glob.glob('*.mp4')
+    # for i in mp4:
+    #     split(i)

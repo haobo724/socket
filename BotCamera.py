@@ -62,7 +62,7 @@ def get_display():
         t = time.time()
         ret, img = v.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = np.rot90(img,k=-2)
+        # img = np.rot90(img,k=-2)
 
         send_data  = cv2.resize(img[y3:y3+h3,x3:x3+w3,:], (640, 480))
         # send_data = cv2.warpPerspective(img, M, (640, 480))

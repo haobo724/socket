@@ -108,7 +108,7 @@ class Gui(Gui_base):
         self.display_panel.configure(image=self.frame)
         most = int(self.force_buffer.most())
 
-        if most > 5:
+        if most >= 0:
             if self.Recoding_flag:
                 self.recoding_stage = True
                 self.Recoding_btn.configure(text='Recoding ON', bg='red')

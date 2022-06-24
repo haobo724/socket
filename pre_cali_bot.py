@@ -8,7 +8,6 @@ from Gui_base import CAMERA_PORT_BOT
 
 global point_List
 point_List = deque(maxlen=4)
-
 print(cv2.__version__)
 camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT)
 camera_bot.set(cv2.CAP_PROP_BRIGHTNESS,100)
@@ -25,8 +24,11 @@ def get_bot_display(img):
             ret2, frame_bot = camera_bot.read()
         else:
             frame_bot = img
+            ret2= True
+        if not ret2:
+            raise ValueError
+            break
         # frame_bot = np.rot90(frame_bot, 2)
-        frame_bot = np.rot90(frame_bot,k=-2)
         cv2.imshow('frame_bot', frame_bot)
         k = cv2.waitKey(1)
 
