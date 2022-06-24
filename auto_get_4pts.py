@@ -76,11 +76,24 @@ def split(path):
             frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
             cv2.imwrite(f'pics/{NAME}_{time}.jpg', frame)
         time +=1
-
-
+def run_pall(path):
+    video = cv2.VideoCapture(path[0])
+    video2 = cv2.VideoCapture(path[1])
+    while True:
+        ret, frame = video.read()
+        ret2, frame2 = video2.read()
+        if not ret:
+            print('Error')
+            break
+        f = np.concatenate((frame,frame2),axis=0)
+        cv2.imshow('hi',f)
+        cv2.waitKey()
 
 if __name__ == '__main__':
-    run_classic()
-    # mp4 = glob.glob('*.mp4')
+    # run_classic()
+    mp4 = glob.glob('*.mp4')
     # for i in mp4:
-    #     split(i)
+    # #     split(i)
+    #     video = cv2.VideoCapture(i)
+    #     print(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    run_pall(mp4)
