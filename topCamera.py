@@ -29,7 +29,7 @@ def get_display():
     # img = cv2.resize(img, (640, 480))
 
     area_reader = model_infer(
-        r'res34epoch=191-val_Iou=0.78.ckpt')
+        r'u-resnet34_448_256-epoch=53-val_Iou=0.88.ckpt')
     frame_number = 0
     s = socket.socket()
     s.connect((host, int(port)))

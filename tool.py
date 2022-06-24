@@ -1,5 +1,9 @@
+import glob
 import os
 import queue
+
+import imageio
+from tqdm import tqdm
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import segmentation_models_pytorch as smp
@@ -11,10 +15,32 @@ from albumentations.pytorch import ToTensorV2
 from PIL import Image
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-
+from torch.utils.data import DataLoader,Dataset
+TRAIN_IMG_DIR = 'pics/'
 IMAGE_HEIGHT = 256  # 1096 originally  0.25
 IMAGE_WIDTH = 448  # 1936 originall
+class LeafData(Dataset):
 
+    def __init__(self,
+                 data,
+                 transform=None):
+        self.data = data
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # import
+        # path = os.path.join(self.directory, self.data.iloc[idx]['image_id'])
+        img = imageio.imread(self.data[idx])
+        image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # image = np.array(imageio.imread(self.data[idx]))
+        # augmentations
+        if self.transform is not None:
+            image = self.transform(image=image)['image']
+
+        return image
 
 class Buffer():
     def __init__(self, size):
@@ -45,6 +71,46 @@ class Buffer():
         vals, counts = np.unique(self.list, return_counts=True)
         index = np.argmax(counts)
         return vals[index]
+def cal_std_mean(TRAIN_IMG_DIR, IMAGE_HEIGHT, IMAGE_WIDTH):
+    augs = A.Compose([A.Resize(height=IMAGE_HEIGHT,
+                               width=IMAGE_WIDTH),
+                      A.Normalize(mean=(0, 0, 0),
+                                  std=(1, 1, 1)),
+                      ToTensorV2()])
+    imgs = glob.glob(TRAIN_IMG_DIR + '*.jpg')
+    print(imgs)
+    image_dataset = LeafData(data=imgs,
+                             transform=augs)
+    image_loader = DataLoader(image_dataset,
+                              batch_size=4,
+                              shuffle=False,
+                              num_workers=0,
+                              pin_memory=True)
+
+    # placeholders
+    psum = torch.tensor([0.0, 0.0, 0.0])
+    psum_sq = torch.tensor([0.0, 0.0, 0.0])
+
+    # loop through images
+    for inputs in tqdm(image_loader):
+        psum += inputs.sum(axis=[0, 2, 3])
+
+        psum_sq += (inputs ** 2).sum(axis=[0, 2, 3])
+    # pixel count
+    count = len(glob.glob(TRAIN_IMG_DIR + '/*.jpg')) * IMAGE_HEIGHT * IMAGE_WIDTH
+    # mean and std
+    total_mean = psum / count
+    total_var = (psum_sq / count) - (total_mean ** 2)
+    total_std = torch.sqrt(total_var)
+    torch.cuda.empty_cache()
+
+    # mean: tensor([0.2292, 0.2355, 0.3064])
+    # std:  tensor([0.2448, 0.2450, 0.2833])
+
+    # output
+    print('mean: ' + str(tuple(total_mean)))
+    print('std:  ' + str(tuple(total_std)))
+    return total_mean, total_std
 
 
 def mapping_color_tensor(img):
@@ -98,13 +164,13 @@ class model_infer():
         adapted_dict = {k[n_clip:]: v for k, v in loaded_dict.items()
                         if k.startswith(prefix)}
         self.model.load_state_dict(adapted_dict)
-
+        # self.mean , self.std =cal_std_mean(TRAIN_IMG_DIR, IMAGE_HEIGHT, IMAGE_WIDTH)
         self.infer_xform = A.Compose(
             [
                 A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
                 A.Normalize(
-                    mean=[0.2947, 0.3138, 0.3603],
-                    std=[0.2789, 0.3044, 0.3409],
+                    mean=[0.6206,0.6091,0.6004],
+                    std=[(0.1495), (0.1587), (0.1720)],
                     max_pixel_value=255.0,
                 ),
                 ToTensorV2(),
@@ -169,7 +235,14 @@ def Red_seg(img):
 
     return result
 
+def Green_seg(img):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    lower_Green = np.array([80, 30, 30])
+    upper_Green = np.array([100, 255, 255])
+    result = cv2.inRange(img, lower_Green, upper_Green).astype(np.uint8)
 
+    result = np.dstack([result for _ in range(3)])
+    return  result
 def get_regression(x, y):
     # 将 x，y 分别增加一个轴，以满足 sklearn 中回归模型认可的数据
     x = x.reshape(-1, 1)
