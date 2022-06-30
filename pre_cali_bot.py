@@ -10,6 +10,7 @@ global point_List
 point_List = deque(maxlen=4)
 print(cv2.__version__)
 camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT)
+camera_bot = cv2.VideoCapture(r'Top_Cali (1).mp4')
 camera_bot.set(cv2.CAP_PROP_BRIGHTNESS,100)
 camera_bot.set(cv2.CAP_PROP_EXPOSURE,-7)
 print(camera_bot.get(cv2.CAP_PROP_EXPOSURE))
@@ -98,18 +99,18 @@ def get_M(img):
 
 def get_force_height_area(img):
     file_name = 'force.pkl'
-    force_file = cv2.selectROI('roi', img)
+    force_file = cv2.selectROI('force', img)
     with open(file_name, 'wb') as file:
         pickle.dump(force_file, file)
     file_name = 'height.pkl'
 
-    height_file = cv2.selectROI('roi', img)
+    height_file = cv2.selectROI('height', img)
     with open(file_name, 'wb') as file:
         pickle.dump(height_file, file)
 def get_whole_display(img):
     file_name = 'display.pkl'
 
-    display_file = cv2.selectROI('roi', img)
+    display_file = cv2.selectROI('whole_display', img)
     with open(file_name, 'wb') as file:
         pickle.dump(display_file, file)
 if __name__ == '__main__':

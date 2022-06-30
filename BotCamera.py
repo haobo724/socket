@@ -25,8 +25,8 @@ print(camera_bot.get(cv2.CAP_PROP_BRIGHTNESS))
 
 def OCR_THIRD(img):
     result = ocr.ocr(img, cls=False,det=False)
-    for line in result:
-        print(line)
+    # for line in result:
+    #     print(line)
     result = result[0]
     try:
         result = int(result[0])

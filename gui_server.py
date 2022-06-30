@@ -1,3 +1,4 @@
+import os
 import pickle
 import socket
 import time
@@ -14,7 +15,9 @@ from recv import recv_client_data
 from tool import Buffer
 
 print('torch gpu:', torch.cuda.is_available())
-
+video_save_path = 'video'
+if not os.path.exists(video_save_path):
+    os.mkdir(video_save_path)
 
 def timer(func):
     def warp(*args, **kwargs):
@@ -42,8 +45,8 @@ class Gui(Gui_base):
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.patient_idx = 0
         self.recoding_stage = True
-        self.out_top_path = f'patient{self.patient_idx}_top.mp4'
-        self.out_bot_path = f'patient{self.patient_idx}_bot.mp4'
+        self.out_top_path = os.path.join(video_save_path,f'patient{self.patient_idx}_top.mp4')
+        self.out_bot_path = os.path.join(video_save_path,f'patient{self.patient_idx}_bot.mp4')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
         self.tl = []
@@ -158,8 +161,8 @@ class Gui(Gui_base):
 
     def new_writer(self):
         self.patient_idx += 1
-        self.out_top_path = f'patient{self.patient_idx}_top.mp4'
-        self.out_bot_path = f'patient{self.patient_idx}_bot.mp4'
+        self.out_top_path = os.path.join(video_save_path,f'patient{self.patient_idx}_top.mp4')
+        self.out_bot_path = os.path.join(video_save_path,f'patient{self.patient_idx}_bot.mp4')
         codec = cv2.VideoWriter_fourcc(*'mp4v')
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
