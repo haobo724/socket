@@ -7,10 +7,9 @@ from BotCamera import OCR_THIRD
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import numpy as np
-import torch
 from paddleocr import PaddleOCR, draw_ocr
 import cv2
-from tool import Green_seg
+from tool import Green_seg,KalmanFilter,sort_pts
 
 pkl_save_path = 'pkl'
 if not os.path.exists(pkl_save_path):
@@ -103,7 +102,6 @@ def smooth_pts(Pts_List):
     with open(os.path.join(pkl_save_path,'Pts_List_smooth.pkl') ,'wb') as f:
         pickle.dump(Pts_List, f)
     return Pts_List
-    # Pts_List_Median = signal.medfilt(Pts_List,3)
 
 
 def point_mid(Pts_List_smooth):
@@ -179,14 +177,101 @@ def rec_bot(path):
     else:
         high_lv = second_most_num
         low_lv = most_num
+    with open(os.path.join(pkl_save_path, 'Valid_interval.pkl'), 'wb') as f:
+        pickle.dump( [high_lv, low_lv],f)
     print(high_lv, low_lv)
     last_high = np.argwhere(Height_list == high_lv)
     first_low = np.argwhere(Height_list == low_lv)
     print(last_high[-1], first_low[0])
-    print(first_low[0] - last_high[-1])
+    # print(first_low[0] - last_high[-1])
+    with open(os.path.join(pkl_save_path, 'last_high_first_low.pkl'), 'wb') as f:
+        pickle.dump( [last_high[-1][0], first_low[0][0]],f)
+    cv2.destroyAllWindows()
+    return last_high[-1][0], first_low[0][0]
 
-    return last_high[-1], first_low[0]
+def Kalman(Pts_List_smooth):
+    if type(Pts_List_smooth) is str:
+        with open(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'), 'rb') as f:
+            Pts_List_smooth = pickle.load(f)
+    Pts_List_smooth = Pts_List_smooth[:,0,:]
+    print(Pts_List_smooth.shape)
+    kf = KalmanFilter()
+    img = np.zeros((480, 640,3))
 
+    for pt in Pts_List_smooth:
+        pt =tuple(pt)
+        cv2.circle(img, pt, 15, (0, 20, 220), -1)
+        predicted = kf.predict(pt[0], pt[1])
+
+        cv2.circle(img, predicted, 15, (20, 220, 0), 4)
+        cv2.imshow("Img", img)
+        cv2.waitKey(0)
+
+def cut_down(Pts_List_smooth,last_high_first_low):
+    if type(Pts_List_smooth) is str:
+        with open(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'), 'rb') as f:
+            Pts_List_smooth = pickle.load(f)
+    if type(last_high_first_low) is str:
+        with open(os.path.join(pkl_save_path, 'last_high_first_low.pkl'), 'rb') as f:
+            last_high,first_low = pickle.load(f)
+
+    Pts_List_cut = Pts_List_smooth[last_high:first_low,:,:]
+    with open(os.path.join(pkl_save_path, 'Pts_List_cut.pkl'), 'wb') as f:
+        pickle.dump( Pts_List_cut,f)
+    return Pts_List_cut
+
+def Generate_Lookup_table(Pts_List_cut):
+    if type(Pts_List_cut) is str:
+        with open(Pts_List_cut, 'rb') as f:
+            Pts_List_cut = pickle.load(f)
+
+    M_list = []
+    for p in Pts_List_cut:
+        pts1=sort_pts(p)
+        # pts1 = np.float32(p)
+        print(pts1)
+        pts2 = np.float32([[0, 0], [640, 0], [0, 480], [640, 480]])
+        M = cv2.getPerspectiveTransform(pts1, pts2)
+        M_list.append(M)
+
+    with open(os.path.join(pkl_save_path, 'M_list.pkl'), 'wb') as f:
+        pickle.dump(M_list, f)
+    return M_list
+
+def Test_warp(M_list,video,last_high_first_low):
+    if type(M_list) is str:
+        with open(os.path.join(pkl_save_path, 'M_list.pkl'), 'rb') as f:
+            M_list = pickle.load(f)
+    if type(last_high_first_low) is str:
+        with open(os.path.join(pkl_save_path, 'last_high_first_low.pkl'), 'rb') as f:
+            last_high,first_low = pickle.load(f)
+    video = cv2.VideoCapture(video)
+    frames = []
+
+    out_bot_path = f'after_M.mp4'
+    codec = cv2.VideoWriter_fourcc(*'mp4v')
+    out_top = cv2.VideoWriter(out_bot_path, codec, 25, (640, 480))
+    while True:
+        ret,frame = video.read()
+        if not ret:
+            break
+        # cv2.imshow('temp',frame)
+        # cv2.waitKey()
+        frames.append(frame)
+    # if not len(M_list)>(first_low - last_high):
+    #     frames = frames[last_high:first_low]
+
+    print(len(M_list) , len(frames))
+    assert len(M_list) == len(frames)
+    for i in range(len(frames)):
+        img_new = cv2.warpPerspective(frames[i], M_list[i], (640, 480))
+        out_top.write(img_new)
+
+        cv2.namedWindow("img_new", cv2.WINDOW_AUTOSIZE)  # 设置窗口标题和大小
+
+        cv2.imshow("img_new", img_new)
+        cv2.waitKey(1)
+    out_top.release()
 
 def run_pall(path):
     video = cv2.VideoCapture(path[0])
@@ -197,9 +282,11 @@ def run_pall(path):
         if not ret:
             print('Error')
             break
+        print(frame.shape)
+        print(frame2.shape)
         f = np.concatenate((frame, frame2), axis=0)
         cv2.imshow('hi', f)
-        cv2.waitKey()
+        cv2.waitKey(100)
 
 
 if __name__ == '__main__':
@@ -209,11 +296,15 @@ if __name__ == '__main__':
     # #     split(i)
     #     video = cv2.VideoCapture(i)
     #     print(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    path = 'Top_Cali (2).mp4'
-    Pts_List=Rec_Green_Pattern(path)
-    Pts_List_smooth=smooth_pts(Pts_List)
-    Mid = point_mid('')
-
     # path = 'Top_Cali (1).mp4'
-    #
-    # rec_bot(path)
+    # Pts_List=Rec_Green_Pattern(path)
+    # Pts_List_smooth=smooth_pts(Pts_List)
+    # # Mid = point_mid('')
+    # # smooth = 'pkl/Pts_List_smooth.pkl'
+    # # Kalman(smooth)
+    # path = 'Top_Cali (2).mp4'
+    # last_high_first_low = rec_bot(path)
+    # Pts_List_cut=cut_down(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'),os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
+    # M_list = Generate_Lookup_table(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'))
+    # Test_warp(os.path.join(pkl_save_path, 'M_list.pkl'),'Top_Cali (1).mp4',os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
+    run_pall(['Top_Cali (1).mp4','after_M.mp4'])

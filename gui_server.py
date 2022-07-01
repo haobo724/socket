@@ -34,10 +34,9 @@ class Gui(Gui_base):
         super().__init__(queue_list, StopEVENT)
         # self.loop = asyncio.new_event_loop()
         # self.t_update = threading.Thread(target=self.get_loop, args=(self.loop,))
-        # self.t_update.start()
-        # t = self.update_display()
-        # asyncio.run_coroutine_threadsafe(t, self.loop)
-        # self.root.update()
+        self.M_list = None
+        self.Valid_interval =[0,0]
+
         self.Recoding_flag = False
         self.timer = time.time()
         self.force_buffer = Buffer(20)

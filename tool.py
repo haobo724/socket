@@ -15,10 +15,13 @@ from albumentations.pytorch import ToTensorV2
 from PIL import Image
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader, Dataset
+
 TRAIN_IMG_DIR = 'pics/'
 IMAGE_HEIGHT = 256  # 1096 originally  0.25
 IMAGE_WIDTH = 448  # 1936 originall
+
+
 class LeafData(Dataset):
 
     def __init__(self,
@@ -41,6 +44,7 @@ class LeafData(Dataset):
             image = self.transform(image=image)['image']
 
         return image
+
 
 class Buffer():
     def __init__(self, size):
@@ -71,6 +75,8 @@ class Buffer():
         vals, counts = np.unique(self.list, return_counts=True)
         index = np.argmax(counts)
         return vals[index]
+
+
 def cal_std_mean(TRAIN_IMG_DIR, IMAGE_HEIGHT, IMAGE_WIDTH):
     augs = A.Compose([A.Resize(height=IMAGE_HEIGHT,
                                width=IMAGE_WIDTH),
@@ -137,7 +143,7 @@ def mapping_color_tensor(img):
 class model_infer():
     def __init__(self, models):
         # self.model = unet_train.load_from_checkpoint(models)
-        self.model_CKPT = torch.load(models,map_location='cpu' )
+        self.model_CKPT = torch.load(models, map_location='cpu')
 
         if torch.cuda.is_available():
             self.DEVICE = torch.device('cuda')
@@ -169,7 +175,7 @@ class model_infer():
             [
                 A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
                 A.Normalize(
-                    mean=[0.6206,0.6091,0.6004],
+                    mean=[0.6206, 0.6091, 0.6004],
                     std=[(0.1495), (0.1587), (0.1720)],
                     max_pixel_value=255.0,
                 ),
@@ -225,6 +231,20 @@ class model_infer():
         return thresh
 
 
+class KalmanFilter:
+    kf = cv2.KalmanFilter(4, 2)
+    kf.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
+    kf.transitionMatrix = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32)
+
+    def predict(self, coordX, coordY):
+        ''' This function estimates the position of the object'''
+        measured = np.array([[np.float32(coordX)], [np.float32(coordY)]])
+        self.kf.correct(measured)
+        predicted = self.kf.predict()
+        x, y = int(predicted[0]), int(predicted[1])
+        return x, y
+
+
 def Red_seg(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     lower_red = np.array([0, 43, 46])
@@ -235,6 +255,7 @@ def Red_seg(img):
 
     return result
 
+
 def Green_seg(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     lower_Green = np.array([70, 20, 20])
@@ -242,7 +263,9 @@ def Green_seg(img):
     result = cv2.inRange(img, lower_Green, upper_Green).astype(np.uint8)
 
     result = np.dstack([result for _ in range(3)])
-    return  result
+    return result
+
+
 def get_regression(x, y):
     # 将 x，y 分别增加一个轴，以满足 sklearn 中回归模型认可的数据
     x = x.reshape(-1, 1)
@@ -255,3 +278,26 @@ def get_regression(x, y):
     lin2.fit(X_poly, y)
 
     return poly, lin2
+
+def sort_pts( pts):
+    # sort the points based on their x-coordinates
+    xSorted = pts[np.argsort(pts[:, 0]), :]
+
+    # grab the left-most and right-most points from the sorted
+    # x-roodinate points
+    leftMost = xSorted[:2, :]
+    rightMost = xSorted[2:, :]
+    if leftMost[0, 1] != leftMost[1, 1]:
+        leftMost = leftMost[np.argsort(leftMost[:, 1]), :]
+    else:
+        leftMost = leftMost[np.argsort(leftMost[:, 0])[::-1], :]
+    (tl, bl) = leftMost
+    if rightMost[0, 1] != rightMost[1, 1]:
+        rightMost = rightMost[np.argsort(rightMost[:, 1]), :]
+    else:
+        rightMost = rightMost[np.argsort(rightMost[:, 0])[::-1], :]
+    (tr, br) = rightMost
+    # print(tl, tr, bl, br)
+    x = tr[0] - tl[0]
+    y = br[1] - tr[1]
+    return np.array([tl, tr, bl, br], dtype="float32")
