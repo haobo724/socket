@@ -69,14 +69,14 @@ def get_display():
         # img_gray = cv2.cvtColor(send_data, cv2.COLOR_RGB2GRAY)
         force_block = img[y2:y2+h2,x2:x2+w2,:]
         height_block = img[y1:y1+h1,x1:x1+w1,:]
+
         height = OCR_THIRD(height_block)
         force = OCR_THIRD(force_block)
 
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
-        print(height,force)
         height_b = bytes(height.to_bytes(4, byteorder='little', signed=True))
         force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
-        head = height_b + force_b
+        head =  force_b + height_b
         # print(len(head))
         arrBuf = bytearray(b'\xff\xaa\xff\xaa')
         # if send_data is None:

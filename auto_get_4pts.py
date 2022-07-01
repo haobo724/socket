@@ -159,7 +159,7 @@ def rec_bot(path):
 
         force_block = img[y2:y2 + h2, x2:x2 + w2, :]
         height_block = img[y1:y1 + h1, x1:x1 + w1, :]
-        # cv2.imshow('test'height_block)
+        # cv2.imshow('test',height_block)
         # cv2.waitKey()
 
         height = OCR_THIRD(height_block)
@@ -296,15 +296,15 @@ if __name__ == '__main__':
     # #     split(i)
     #     video = cv2.VideoCapture(i)
     #     print(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    # path = 'Top_Cali (1).mp4'
-    # Pts_List=Rec_Green_Pattern(path)
-    # Pts_List_smooth=smooth_pts(Pts_List)
+    path = 'Top_Cali (2).mp4'
+    Pts_List=Rec_Green_Pattern(path)
+    Pts_List_smooth=smooth_pts(Pts_List)
     # # Mid = point_mid('')
     # # smooth = 'pkl/Pts_List_smooth.pkl'
     # # Kalman(smooth)
-    # path = 'Top_Cali (2).mp4'
-    # last_high_first_low = rec_bot(path)
-    # Pts_List_cut=cut_down(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'),os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
-    # M_list = Generate_Lookup_table(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'))
-    # Test_warp(os.path.join(pkl_save_path, 'M_list.pkl'),'Top_Cali (1).mp4',os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
-    run_pall(['Top_Cali (1).mp4','after_M.mp4'])
+    path = 'Top_Cali (1).mp4'
+    last_high_first_low = rec_bot(path)
+    Pts_List_cut=cut_down(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'),os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
+    M_list = Generate_Lookup_table(os.path.join(pkl_save_path, 'Pts_List_cut.pkl'))
+    # Test_warp(os.path.join(pkl_save_path, 'M_list.pkl'),'Top_Cali (2).mp4',os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
+    # run_pall(['Top_Cali (2).mp4','after_M.mp4'])

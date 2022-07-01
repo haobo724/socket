@@ -18,7 +18,9 @@ print('torch gpu:', torch.cuda.is_available())
 video_save_path = 'video'
 if not os.path.exists(video_save_path):
     os.mkdir(video_save_path)
-
+pkl_save_path = 'pkl'
+if not os.path.exists(pkl_save_path):
+    os.mkdir(pkl_save_path)
 def timer(func):
     def warp(*args, **kwargs):
         start = time.time()
@@ -34,9 +36,16 @@ class Gui(Gui_base):
         super().__init__(queue_list, StopEVENT)
         # self.loop = asyncio.new_event_loop()
         # self.t_update = threading.Thread(target=self.get_loop, args=(self.loop,))
-        self.M_list = None
-        self.Valid_interval =[0,0]
+        with open(os.path.join(pkl_save_path, 'M_list.pkl'), 'rb') as f:
+            self.M_list  = pickle.load(f)
+        with open(os.path.join(pkl_save_path, 'Valid_interval.pkl'), 'rb') as f:
+            self.high_lv, self.low_lv = pickle.load(f)
 
+        with open(os.path.join(pkl_save_path, 'last_high_first_low.pkl'), 'rb') as f:
+            self.last_high,self.first_low = pickle.load(f)
+
+        self.Valid_interval =[0,0]
+        self.M =None
         self.Recoding_flag = False
         self.timer = time.time()
         self.force_buffer = Buffer(20)
@@ -76,18 +85,25 @@ class Gui(Gui_base):
             return
         bot_img = self.queue_list[1].get()
         info = self.queue_list[4].get()
-        self.force_buffer.append(info[1])
+        height,force = info
+        self.force_buffer.append(force)
         top_img = self.queue_list[0].get()
         for i in range(CLIENT_NR):
             self.queue_list[5].release()
         img, pred = np.split(top_img, 2, axis=0)
         b1, b2 = np.split(bot_img, 2, axis=0)
-        pts2 = np.float32([[0, 0], [480, 0], [0, 640], [480, 640]])
+        if not self.Recoding_flag:
+            index = round((height-self.low_lv)*(self.last_high-self.first_low)/(self.high_lv-self.low_lv))
+            try:
+                self.M = self.M_list[index]
+                img_after = cv2.warpPerspective(img, self.M, (640, 480))
+            except IndexError:
+                img_after = cv2.warpPerspective(img, self.M, (640, 480))
+        else:
+            img_after =img
         # M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
-
-        # img = cv2.warpPerspective(img, M, (640, 480))
-        self.height_value.configure(text="{:.1f} mm".format(info[0]))
-        self.compression_value.configure(text="{:.1f} N".format(info[1]))
+        self.height_value.configure(text="{:.1f} mm".format(height))
+        self.compression_value.configure(text="{:.1f} N".format(force))
         self.area_value.configure(text="{:.3f} mm^2".format(-1))
         self.Pressure_value.configure(
             text="{:.3f} N/mm^2".format(99))  # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
@@ -100,7 +116,7 @@ class Gui(Gui_base):
         # # frame1_1 = cv2.resize(cv2.imread('thresh.jpg'), (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         # frame1_1 = cv2.resize(test_img, (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
         self.frame = np.concatenate((
-            np.concatenate((img, pred), axis=0),
+            np.concatenate((img_after, pred), axis=0),
             # top_img,
             bot_img
             # np.concatenate((bot_img, bot_img), axis=0)
@@ -116,7 +132,7 @@ class Gui(Gui_base):
                 self.Recoding_btn.configure(text='Recoding ON', bg='red')
                 self.Recoding_btn.update()
                 self.out_top.write(img)
-                self.out_bot.write(b1)
+                self.out_bot.write(b2)
         else:
             if self.Recoding_flag:
                 # want recording but Force is smaller than 5, go pause
