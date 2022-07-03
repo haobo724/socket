@@ -21,6 +21,8 @@ if not os.path.exists(video_save_path):
 pkl_save_path = 'pkl'
 if not os.path.exists(pkl_save_path):
     os.mkdir(pkl_save_path)
+
+
 def timer(func):
     def warp(*args, **kwargs):
         start = time.time()
@@ -37,15 +39,15 @@ class Gui(Gui_base):
         # self.loop = asyncio.new_event_loop()
         # self.t_update = threading.Thread(target=self.get_loop, args=(self.loop,))
         with open(os.path.join(pkl_save_path, 'M_list.pkl'), 'rb') as f:
-            self.M_list  = pickle.load(f)
+            self.M_list = pickle.load(f)
         with open(os.path.join(pkl_save_path, 'Valid_interval.pkl'), 'rb') as f:
             self.high_lv, self.low_lv = pickle.load(f)
 
         with open(os.path.join(pkl_save_path, 'last_high_first_low.pkl'), 'rb') as f:
-            self.last_high,self.first_low = pickle.load(f)
+            self.last_high, self.first_low = pickle.load(f)
 
-        self.Valid_interval =[0,0]
-        self.M =None
+        self.Valid_interval = [0, 0]
+        self.M = None
         self.Recoding_flag = False
         self.timer = time.time()
         self.force_buffer = Buffer(20)
@@ -53,16 +55,16 @@ class Gui(Gui_base):
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.patient_idx = 0
         self.recoding_stage = True
-        self.out_top_path = os.path.join(video_save_path,f'patient{self.patient_idx}_top.mp4')
-        self.out_bot_path = os.path.join(video_save_path,f'patient{self.patient_idx}_bot.mp4')
+        self.out_top_path = os.path.join(video_save_path, f'patient{self.patient_idx}_top.mp4')
+        self.out_bot_path = os.path.join(video_save_path, f'patient{self.patient_idx}_bot.mp4')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
         self.tl = []
         self.tr = []
         self.bl = []
         self.br = []
-        self.pts1 = None
-        self.setup()
+        # self.pts1 = None
+        # self.setup()
         while not self.StopEVENT.is_set():
             self.update_display()
             self.root.update()
@@ -70,8 +72,9 @@ class Gui(Gui_base):
         # self.root.mainloop()
 
     def setup(self):
-        with open('001.pkl', 'rb') as look:
-            self.pts1 = pickle.load(look)
+        pass
+        # with open('001.pkl', 'rb') as look:
+        #     self.pts1 = pickle.load(look)
 
         # with open('look_upT.pkl', 'rb') as look:
         #     self.tl, self.tr, self.bl, self.br = pickle.load(look)
@@ -85,7 +88,7 @@ class Gui(Gui_base):
             return
         bot_img = self.queue_list[1].get()
         info = self.queue_list[4].get()
-        height,force = info
+        height, force = info
         self.force_buffer.append(force)
         top_img = self.queue_list[0].get()
         for i in range(CLIENT_NR):
@@ -93,14 +96,14 @@ class Gui(Gui_base):
         img, pred = np.split(top_img, 2, axis=0)
         b1, b2 = np.split(bot_img, 2, axis=0)
         if not self.Recoding_flag:
-            index = round((height-self.low_lv)*(self.last_high-self.first_low)/(self.high_lv-self.low_lv))
+            index = round((height - self.low_lv) * (self.last_high - self.first_low) / (self.high_lv - self.low_lv))
             try:
                 self.M = self.M_list[index]
                 img_after = cv2.warpPerspective(img, self.M, (640, 480))
             except IndexError:
                 img_after = cv2.warpPerspective(img, self.M, (640, 480))
         else:
-            img_after =img
+            img_after = img
         # M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
         self.height_value.configure(text="{:.1f} mm".format(height))
         self.compression_value.configure(text="{:.1f} N".format(force))
@@ -126,7 +129,7 @@ class Gui(Gui_base):
         self.display_panel.configure(image=self.frame)
         most = int(self.force_buffer.most())
 
-        if most >= 0:
+        if most >= self.force_threshold:
             if self.Recoding_flag:
                 self.recoding_stage = True
                 self.Recoding_btn.configure(text='Recoding ON', bg='red')
@@ -153,6 +156,13 @@ class Gui(Gui_base):
 
     def recoding(self):
         self.Recoding_flag = not self.Recoding_flag
+        if self.Pre_Recoding_status:
+            codec = cv2.VideoWriter_fourcc(*'mp4v')
+            codec2 = cv2.VideoWriter_fourcc(*'mp4v')
+            self.out_top_path = os.path.join(video_save_path, f'lookup_Table(TOP).mp4')
+            self.out_bot_path = os.path.join(video_save_path, f'lookup_Table(BOT).mp4')
+            self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
+            self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
 
         if self.Recoding_flag:
             self.Recoding_btn.configure(text='Recoding ON', bg='red')
@@ -167,6 +177,13 @@ class Gui(Gui_base):
 
         self.Recoding_btn.update()
 
+    def Pre_Recoding(self):
+        self.Pre_Recoding_status = not self.Pre_Recoding_status
+        if self.Pre_Recoding_status:
+            self.force_threshold = 0
+        else:
+            self.force_threshold = 5
+
     def onClose(self):
         self.StopEVENT.set()
         if self.out_bot.isOpened():
@@ -175,13 +192,19 @@ class Gui(Gui_base):
         self.root.quit()
 
     def new_writer(self):
-        self.patient_idx += 1
-        self.out_top_path = os.path.join(video_save_path,f'patient{self.patient_idx}_top.mp4')
-        self.out_bot_path = os.path.join(video_save_path,f'patient{self.patient_idx}_bot.mp4')
+        if not self.Pre_Recoding_status:
+            self.patient_idx += 1
+        else:
+            pass
+
+        self.out_top_path = os.path.join(video_save_path, f'patient{self.patient_idx}_top.mp4')
+        self.out_bot_path = os.path.join(video_save_path, f'patient{self.patient_idx}_bot.mp4')
         codec = cv2.VideoWriter_fourcc(*'mp4v')
         codec2 = cv2.VideoWriter_fourcc(*'mp4v')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
+
+
 
 if __name__ == '__main__':
     # pool = multiprocessing.Pool(processes=5)
@@ -220,7 +243,6 @@ if __name__ == '__main__':
             break
     a = Gui(queue_list, StopEVENT)
 
-
     s.close()
     # gui_process.join()
     # gui_process.close()
@@ -228,4 +250,3 @@ if __name__ == '__main__':
     for p in process_pool:
         p.kill()
     print('done')
-

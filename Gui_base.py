@@ -27,6 +27,7 @@ class Gui_base:
         self.breast_img = None
         self.param_img = None
         self.param_thresh = None
+        self.force_threshold = 5
         self.paddle_height = 0
         self.compression_force = 0
         self.breast_pred = None
@@ -38,7 +39,7 @@ class Gui_base:
         # self.show_time = args.showtime
         # black or Noimg
         # self.no_img = cv2.cvtColor(cv2.imread('Noimg.png'), cv2.COLOR_BGR2RGB)
-
+        self.Pre_Recoding_status= False
         self.whole_img_flag = 0
         # configuration of layout
         self.root = tk.Tk()
@@ -152,13 +153,13 @@ class Gui_base:
                                       command=self.recoding,
                                       bg='SystemButtonFace')
 
-        self.Reset_btn = tk.Button(self.param_panel,
+        self.Pre_Recoding_btn = tk.Checkbutton(self.param_panel,
                                    image=self.dummy_img,
                                    width=BTN_SIZE[0],
                                    height=int(BTN_SIZE[1] / 2),
                                    compound="center",
-                                   text='Reset',
-                                   command=self.reset,
+                                   text='Pre_Recoding',
+                                   command=self.Pre_Recoding,
                                    bg='SystemButtonFace')
 
         self.Breast_btn = tk.Button(self.param_panel,
@@ -192,14 +193,14 @@ class Gui_base:
 
         self.Recoding_btn.grid(row=10)
         self.Breast_btn.grid(row=12)
-        self.Reset_btn.grid(row=11)
+        self.Pre_Recoding_btn.grid(row=11)
         self.exit_btn.grid(row=13)
         self.queue_list = queue_list
 
     def get_loop(self, loop):
         pass
 
-    def reset(self):
+    def Pre_Recoding(self):
         pass
 
     def show_whole_breast_img(self):
@@ -225,4 +226,10 @@ class Gui_base:
         pass
 
     def onClose(self):
-        pass
+        self.root.quit()
+
+if __name__ == '__main__':
+
+
+    a = Gui_base(None,[])
+    a.root.mainloop()
