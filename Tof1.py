@@ -1,20 +1,20 @@
 import os
+import pickle
 from datetime import datetime
-from gui_server import timer
 import numpy as np
 import serial
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import socket
-import time
 
 from Gui_base import host, port
 
-def get_tof(serialport='COM4', data_list=[]):
-    s = socket.socket()
-    s.connect((host, int(port)))
-    print(os.path.basename(__file__) + ' bind')
+def get_tof(serialport='COM5', data_list=[]):
+    big_list =[]
     print("###starting thread###")
+    # s = socket.socket()
+    # s.connect((host, int(port)))
+    print(os.path.basename(__file__) + ' bind')
     with serial.Serial(
             port=serialport,
             baudrate=921600,
@@ -66,42 +66,45 @@ def get_tof(serialport='COM4', data_list=[]):
                     # print("Reihe 4")
             list1 = (['timestamp', datetime.now(), 'identifier', identifier, distarray[identifier, :, :]])
             data_list.append(list1)
+            # print(list1)
             if count % 15 ==0 and count!=0:
-                # print(distarray)
-                # print(distarray)
-                a = distarray.tobytes()
-                # tof_signal = np.frombuffer(a)
-                # b = np.reshape(tof_signal,((4, 4, 8))).copy()
-                # b[0][0][0]=1
-                # print(distarray)
-                # print(b)
-                # assert distarray.all()==b.all()
-                # input()
-
-                picSize = len(a)
-                print(picSize)
-                arrBuf = bytearray(b'\xff\xaa\xff\xaa')
-                data_type = b'tof1'
-                # 组合数据包
-                arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
-
-                arrBuf += data_type
-
-                arrBuf += a
-                s.sendall(arrBuf)
-                try:
-                    rec_data = s.recv(64)
-                    print(str(rec_data, encoding='utf-8'))
-
-
-                except ConnectionResetError or ConnectionAbortedError:
-                    break
+                big_list.append(data_list)
+                data_list=[]
+            #     # print(distarray)
+            #     # print(distarray)
+            #     a = distarray.tobytes()
+            #     # tof_signal = np.frombuffer(a)
+            #     # b = np.reshape(tof_signal,((4, 4, 8))).copy()
+            #     # b[0][0][0]=1
+            #     # print(distarray)
+            #     # print(b)
+            #     # assert distarray.all()==b.all()
+            #     # input()
+            #
+            #     picSize = len(a)
+            #     print(picSize)
+            #     arrBuf = bytearray(b'\xff\xaa\xff\xaa')
+            #     data_type = b'tof1'
+            #     # 组合数据包
+            #     arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
+            #
+            #     arrBuf += data_type
+            #
+            #     arrBuf += a
+            #     s.sendall(arrBuf)
+            #     try:
+            #         rec_data = s.recv(64)
+            #         print(str(rec_data, encoding='utf-8'))
+            #
+            #
+            #     except ConnectionResetError or ConnectionAbortedError:
+            #         break
 
             count+=1
-        with open("save_list.p", 'wb') as f:
-            f.dump(data_list)
+        with open(f"{str(count)}.p", 'wb') as f:
+            pickle.dump(data_list, f)
 if __name__ == '__main__':
-    a = np.arange(0,32)
-    print(a)
-    print(np.array_split(a,8))
+    # a = np.arange(0,32)
+    # print(a)
+    # print(np.array_split(a,8))
     get_tof()

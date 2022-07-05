@@ -13,7 +13,7 @@ from tool import model_infer
 
 def get_display():
 
-    camera_top = cv2.VideoCapture(CAMERA_PORT_TOP)
+    camera_top = cv2.VideoCapture(CAMERA_PORT_TOP,cv2.CAP_DSHOW)
     camera_top.set(cv2.CAP_PROP_FPS, 30)
 
     #
@@ -39,6 +39,8 @@ def get_display():
         # img = frames.get_color_frame()
         # img = np.asanyarray(img.get_data())
         ret, img = camera_top.read()
+        if not ret:
+            print('???')
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         t = time.time()

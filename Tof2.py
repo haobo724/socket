@@ -10,9 +10,9 @@ import time
 
 from Gui_base import host, port
 
-def get_tof(serialport='COM3', data_list=[]):
-    # s = socket.socket()
-    # s.connect((host, int(port)))
+def get_tof(serialport='COM6', data_list=[]):
+    s = socket.socket()
+    s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
     print("###starting thread###")
     with serial.Serial(
@@ -32,12 +32,12 @@ def get_tof(serialport='COM3', data_list=[]):
         while (1):  # <-- insert read flag here
             dataraw = bytearray(ser.read_until(b'\xff\xfa\xff\xfa'))
             data = dataraw[-44:]
-            identifier = data[44 - 7]
 
-            # try:
-            #     identifier = data[44 - 7]
-            # except:
-            #     continue
+            try:
+                identifier = data[44 - 8]
+            except:
+                print(len(data))
+                continue
 
             # print('Sensor ID : ',identifier)
             # status = int.from_bytes(data[44 - 12:44 - 9], 'little')
@@ -78,8 +78,8 @@ def get_tof(serialport='COM3', data_list=[]):
                 # input()
 
                 picSize = len(a)
-                arrBuf=''
-                data_type = b'tof1'
+                arrBuf = bytearray(b'\xff\xaa\xff\xaa')
+                data_type = b'tof2'
                 # 组合数据包
                 arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
                 arrBuf += data_type
@@ -99,7 +99,7 @@ def get_tof(serialport='COM3', data_list=[]):
         with open("save_list2.p", 'wb') as f:
             f.dump(data_list)
 if __name__ == '__main__':
-    a = np.arange(0,32)
-    print(a)
-    print(np.array_split(a,8))
+    # a = np.arange(0,32)
+    # print(a)
+    # print(np.array_split(a,8))
     get_tof()

@@ -4,7 +4,6 @@ from collections import deque
 import cv2
 import numpy as np
 
-# import pyrealsense2 as rs
 from Gui_base import CAMERA_PORT_TOP
 
 global point_List
@@ -116,7 +115,7 @@ def get_center(pt):
 
 def get_top_image(img):
     if img is None:
-        camera_top = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        camera_top = cv2.VideoCapture(CAMERA_PORT_TOP, cv2.CAP_DSHOW)
         # pipeline = rs.pipeline()
         # config = rs.config()
         # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
