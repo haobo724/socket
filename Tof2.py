@@ -10,9 +10,9 @@ import time
 
 from Gui_base import host, port
 
-def get_tof(serialport='COM4', data_list=[]):
-    s = socket.socket()
-    s.connect((host, int(port)))
+def get_tof(serialport='COM3', data_list=[]):
+    # s = socket.socket()
+    # s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
     print("###starting thread###")
     with serial.Serial(
@@ -65,7 +65,6 @@ def get_tof(serialport='COM4', data_list=[]):
                     distarray[identifier, 3, i] = int.from_bytes(data[i * 4:i * 4 + 3], 'little')
                     # print("Reihe 4")
             list1 = (['timestamp', datetime.now(), 'identifier', identifier, distarray[identifier, :, :]])
-            data_list.append(list1)
             if count % 15 ==0 and count!=0:
                 # print(distarray)
                 # print(distarray)
@@ -79,26 +78,25 @@ def get_tof(serialport='COM4', data_list=[]):
                 # input()
 
                 picSize = len(a)
-                print(picSize)
-                arrBuf = bytearray(b'\xff\xaa\xff\xaa')
+                arrBuf=''
                 data_type = b'tof1'
                 # 组合数据包
                 arrBuf += bytearray(picSize.to_bytes(4, byteorder='little'))
-
                 arrBuf += data_type
 
                 arrBuf += a
-                s.sendall(arrBuf)
-                try:
-                    rec_data = s.recv(64)
-                    print(str(rec_data, encoding='utf-8'))
+                # s.sendall(arrBuf)
+                # try:
+                #     rec_data = s.recv(64)
+                #     print(str(rec_data, encoding='utf-8'))
+                #
 
-
-                except ConnectionResetError or ConnectionAbortedError:
-                    break
+                # except ConnectionResetError or ConnectionAbortedError:
+                #     break
+                data_list.append(list1)
 
             count+=1
-        with open("save_list.p", 'wb') as f:
+        with open("save_list2.p", 'wb') as f:
             f.dump(data_list)
 if __name__ == '__main__':
     a = np.arange(0,32)

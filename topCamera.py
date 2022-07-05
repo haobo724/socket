@@ -1,8 +1,6 @@
 import os
 import socket
 import time
-
-# import pyrealsense2 as rs
 import cv2
 import numpy as np
 
@@ -15,7 +13,9 @@ from tool import model_infer
 
 def get_display():
 
-    v = cv2.VideoCapture(CAMERA_PORT_TOP)
+    camera_top = cv2.VideoCapture(CAMERA_PORT_TOP)
+    camera_top.set(cv2.CAP_PROP_FPS, 30)
+
     #
     # pipeline = rs.pipeline()
     # config = rs.config()
@@ -38,7 +38,7 @@ def get_display():
         # frames = pipeline.wait_for_frames()
         # img = frames.get_color_frame()
         # img = np.asanyarray(img.get_data())
-        ret, img = v.read()
+        ret, img = camera_top.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         t = time.time()
@@ -70,8 +70,8 @@ def get_display():
         s.sendall(arrBuf)
         try:
             rec_data = s.recv(64)
-            print(str(rec_data, encoding='utf-8'))
-            print('c1:', frame_number)
+            # print(str(rec_data, encoding='utf-8'))
+            # print('c1:', frame_number)
             frame_number += 1
 
         except ConnectionAbortedError:

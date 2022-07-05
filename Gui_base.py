@@ -15,8 +15,8 @@ FONT_SIZE = 18
 FONT_COLOR = 'black'
 host = socket.gethostname()
 port = 12
-CLIENT_NR = 2
-CAMERA_PORT_BOT = 2
+CLIENT_NR = 3
+CAMERA_PORT_BOT = 1
 CAMERA_PORT_TOP = 0
 
 

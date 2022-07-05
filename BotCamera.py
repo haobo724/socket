@@ -6,7 +6,6 @@ import time
 from paddleocr import PaddleOCR
 import cv2
 import numpy as np
-from gui_server import timer
 from Gui_base import CAMERA_PORT_BOT
 from Gui_base import host, port
 
@@ -19,6 +18,7 @@ print(cv2.__version__)
 camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT)
 camera_bot.set(cv2.CAP_PROP_BRIGHTNESS,100)
 camera_bot.set(cv2.CAP_PROP_EXPOSURE,-7)
+camera_bot.set(cv2.CAP_PROP_FPS,30)
 print(camera_bot.get(cv2.CAP_PROP_EXPOSURE))
 print(camera_bot.get(cv2.CAP_PROP_BRIGHTNESS))
 
@@ -72,7 +72,8 @@ def get_display():
 
         height = OCR_THIRD(height_block)
         force = OCR_THIRD(force_block)
-
+        cv2.rectangle(img,(x1,y1),(x1+w1,y1+h1),color=(255,0,0),thickness=5)
+        cv2.rectangle(img,(x2,y2),(x2+w2,y2+h2),color=(255,0,123),thickness=5)
         send_data = np.concatenate((send_data, img), axis=0).tobytes()
         height_b = bytes(height.to_bytes(4, byteorder='little', signed=True))
         force_b = bytes(force.to_bytes(4, byteorder='little', signed=True))
@@ -97,8 +98,8 @@ def get_display():
         s.sendall(arrBuf)
         try:
             rec_data = s.recv(64)
-            print(str(rec_data, encoding='utf-8'))
-            print('\r c2:', frame_number, flush=True)
+            # print(str(rec_data, encoding='utf-8'))
+            # print('\r c2:', frame_number, flush=True)
             frame_number += 1
 
         except ConnectionResetError or ConnectionAbortedError:

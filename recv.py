@@ -69,7 +69,8 @@ def get_tof_data(c, allLen):
     # 取出图片数据
     imgData = allData[0:]
     # 640 * 480 * 3*2
-    if len(imgData) != 1843200:
+
+    if len(imgData) != 1024:
         print('no return', len(imgData))
         return None
     tof_signal = np.frombuffer(imgData, dtype=np.uint8)

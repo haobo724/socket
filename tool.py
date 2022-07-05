@@ -246,12 +246,12 @@ class KalmanFilter:
 
 
 def Red_seg(img):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     lower_red = np.array([0, 43, 46])
     upper_red = np.array([10, 255, 255])
     result = cv2.inRange(img, lower_red, upper_red).astype(np.uint8)
 
-    result = np.dstack([result for _ in range(3)])
+    # result = np.dstack([result for _ in range(3)])
 
     return result
 

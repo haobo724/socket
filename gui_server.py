@@ -12,7 +12,7 @@ from PIL import Image, ImageTk
 from Gui_base import Gui_base
 from Gui_base import host, port, CLIENT_NR
 from recv import recv_client_data
-from tool import Buffer
+from tool import Buffer ,Red_seg
 
 print('torch gpu:', torch.cuda.is_available())
 video_save_path = 'video'
@@ -81,6 +81,13 @@ class Gui(Gui_base):
         # print('[INFO] LOOK UP TABLE FINISHED')
 
     # @timer
+
+    def red_area(self,img):
+        background_area = 27.2*17
+        result = Red_seg(img)
+        pixels = np.sum(result>1)
+        return pixels/background_area ,result
+
     def update_display(self):
         # while not StopEVENT.is_set():
 
@@ -107,7 +114,10 @@ class Gui(Gui_base):
         # M = cv2.getPerspectiveTransform(np.float32(self.pts1), pts2)
         self.height_value.configure(text="{:.1f} mm".format(height))
         self.compression_value.configure(text="{:.1f} N".format(force))
-        self.area_value.configure(text="{:.3f} mm^2".format(-1))
+
+        area ,red_seg = self.red_area(img_after)
+
+        self.area_value.configure(text="{:.3f} mm^2".format(area))
         self.Pressure_value.configure(
             text="{:.3f} N/mm^2".format(99))  # frame0_0 = cv2.resize(cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB),
         #                       (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2)))
@@ -156,7 +166,7 @@ class Gui(Gui_base):
 
     def recoding(self):
         self.Recoding_flag = not self.Recoding_flag
-        if self.Pre_Recoding_status:
+        if self.Pre_Recoding_status and self.Recoding_flag:
             codec = cv2.VideoWriter_fourcc(*'mp4v')
             codec2 = cv2.VideoWriter_fourcc(*'mp4v')
             self.out_top_path = os.path.join(video_save_path, f'lookup_Table(TOP).mp4')
