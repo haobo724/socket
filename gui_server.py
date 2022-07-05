@@ -59,10 +59,8 @@ class Gui(Gui_base):
         self.out_bot_path = os.path.join(video_save_path, f'patient{self.patient_idx}_bot.mp4')
         self.out_top = cv2.VideoWriter(self.out_top_path, codec, 25, (640, 480))
         self.out_bot = cv2.VideoWriter(self.out_bot_path, codec2, 25, (640, 480))
-        self.tl = []
-        self.tr = []
-        self.bl = []
-        self.br = []
+        self.tof1_file = []
+        self.tof2_file = []
         # self.pts1 = None
         # self.setup()
         while not self.StopEVENT.is_set():
@@ -96,9 +94,16 @@ class Gui(Gui_base):
         bot_img = self.queue_list[1].get()
         info = self.queue_list[4].get()
         height, force = info
+        if CLIENT_NR>2:
+
+            tof1_info=self.queue_list[2].get()
+            tof2_info=self.queue_list[3].get()
+        else:
+            tof1_info = 0
+            tof2_info = 0
         self.force_buffer.append(force)
         top_img = self.queue_list[0].get()
-        for i in range(CLIENT_NR):
+        for _ in range(CLIENT_NR):
             self.queue_list[5].release()
         img, pred = np.split(top_img, 2, axis=0)
         b1, b2 = np.split(bot_img, 2, axis=0)
@@ -146,6 +151,8 @@ class Gui(Gui_base):
                 self.Recoding_btn.update()
                 self.out_top.write(img)
                 self.out_bot.write(b2)
+                self.tof1_file.append(tof1_info)
+                self.tof2_file.append(tof2_info)
         else:
             if self.Recoding_flag:
                 # want recording but Force is smaller than 5, go pause
@@ -154,6 +161,10 @@ class Gui(Gui_base):
                     self.out_bot.release()
                     self.Recoding_btn.configure(text='Recoding PAUSE', bg='SystemButtonFace')
                     self.Recoding_btn.update()
+                    with open(f'Patient_{self.patient_idx}_tof1.p','wb') as f:
+                        pickle.dump(self.tof1_file,f)
+                    with open(f'Patient_{self.patient_idx}_tof2.p','wb') as f:
+                        pickle.dump(self.tof2_file,f)
                     self.new_writer()
                     self.recoding_stage = False
                 else:
