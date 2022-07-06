@@ -4,7 +4,7 @@ from collections import deque
 import cv2
 import numpy as np
 
-from Gui_base import CAMERA_PORT_TOP
+from Gui_frame import CAMERA_PORT_TOP
 
 global point_List
 point_List = deque(maxlen=4)

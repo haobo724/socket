@@ -9,8 +9,8 @@ import numpy as np
 import torch
 from PIL import Image, ImageTk
 
-from Gui_base import Gui_base
-from Gui_base import host, port
+from Gui_frame import Gui_base
+from Gui_frame import host, port
 from tool import Buffer
 
 print(torch.cuda.is_available())

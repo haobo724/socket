@@ -9,12 +9,12 @@ import numpy as np
 import torch
 from PIL import Image, ImageTk
 
-from Gui_base import Gui_base
-from Gui_base import host, port, CLIENT_NR
+from Gui_frame import Gui_base,host, port, CLIENT_NR
 from recv import recv_client_data
 from tool import Buffer ,Red_seg
 
 print('torch gpu:', torch.cuda.is_available())
+
 video_save_path = 'video'
 if not os.path.exists(video_save_path):
     os.mkdir(video_save_path)

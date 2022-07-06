@@ -6,8 +6,8 @@ import time
 from paddleocr import PaddleOCR
 import cv2
 import numpy as np
-from Gui_base import CAMERA_PORT_BOT
-from Gui_base import host, port
+from Gui_frame import CAMERA_PORT_BOT
+from Gui_frame import host, port
 
 template_dir = 'OCR_template'
 img_template = []

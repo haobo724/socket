@@ -3,7 +3,7 @@ import pickle
 
 import scipy.signal as signal
 
-from BotCamera import OCR_THIRD
+from Camera_BOT import OCR_THIRD
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import numpy as np

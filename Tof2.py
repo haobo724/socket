@@ -1,3 +1,4 @@
+import argparse
 import os
 from datetime import datetime
 from gui_server import timer
@@ -8,15 +9,15 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import socket
 import time
 
-from Gui_base import host, port
+from Gui_frame import host, port
 
-def get_tof(serialport='COM6', data_list=[]):
+def get_tof(args):
     s = socket.socket()
     s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
     print("###starting thread###")
     with serial.Serial(
-            port=serialport,
+            port=args.port,
             baudrate=921600,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
@@ -29,6 +30,7 @@ def get_tof(serialport='COM6', data_list=[]):
 
         # debug_pose = set_debug_pose()
         count  =0
+        data_list =[]
         while (1):  # <-- insert read flag here
             dataraw = bytearray(ser.read_until(b'\xff\xfa\xff\xfa'))
             data = dataraw[-44:]
@@ -66,6 +68,8 @@ def get_tof(serialport='COM6', data_list=[]):
                     # print("Reihe 4")
             list1 = (['timestamp', datetime.now(), 'identifier', identifier, distarray[identifier, :, :]])
             if count % 15 ==0 and count!=0:
+                data_list = []
+
                 # print(distarray)
                 # print(distarray)
                 a = distarray.tobytes()
@@ -96,10 +100,12 @@ def get_tof(serialport='COM6', data_list=[]):
                 data_list.append(list1)
 
             count+=1
-        with open("save_list2.p", 'wb') as f:
-            f.dump(data_list)
+        # with open("save_list2.p", 'wb') as f:
+        #     f.dump(data_list)
 if __name__ == '__main__':
-    # a = np.arange(0,32)
-    # print(a)
-    # print(np.array_split(a,8))
-    get_tof()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=str, help='', default=r'COM4')
+
+    args = parser.parse_args()
+    print(args)
+    get_tof(args)

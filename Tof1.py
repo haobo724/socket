@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle
 from datetime import datetime
@@ -7,16 +8,16 @@ import serial
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import socket
 
-from Gui_base import host, port
+from Gui_frame import host, port
 
-def get_tof(serialport='COM5', data_list=[]):
+def get_tof(args):
     big_list =[]
     print("###starting thread###")
     # s = socket.socket()
     # s.connect((host, int(port)))
     print(os.path.basename(__file__) + ' bind')
     with serial.Serial(
-            port=serialport,
+            port=args.port,
             baudrate=921600,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
@@ -101,10 +102,12 @@ def get_tof(serialport='COM5', data_list=[]):
             #         break
 
             count+=1
-        with open(f"{str(count)}.p", 'wb') as f:
-            pickle.dump(data_list, f)
+        # with open(f"{str(count)}.p", 'wb') as f:
+        #     pickle.dump(data_list, f)
 if __name__ == '__main__':
-    # a = np.arange(0,32)
-    # print(a)
-    # print(np.array_split(a,8))
-    get_tof()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=str, help='', default=r'COM3')
+
+    args = parser.parse_args()
+    print(args)
+    get_tof(args)
