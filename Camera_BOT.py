@@ -8,13 +8,14 @@ import cv2
 import numpy as np
 from Gui_frame import CAMERA_PORT_BOT
 from Gui_frame import host, port
-
+pkl_save_path = 'pkl'
+if not os.path.exists(pkl_save_path):
+    os.mkdir(pkl_save_path)
 template_dir = 'OCR_template'
 img_template = []
 TEMPLATE_size = (50, 90)
 UPPER_NUMMER =200
 ocr = PaddleOCR(use_angle_cls=False, lang='en',use_gpu=True,gpu_mem=200, det=False, rec_batch_num=5)
-print(cv2.__version__)
 camera_bot = cv2.VideoCapture(CAMERA_PORT_BOT)
 camera_bot.set(cv2.CAP_PROP_BRIGHTNESS,100)
 camera_bot.set(cv2.CAP_PROP_EXPOSURE,-7)
@@ -45,18 +46,14 @@ def get_display():
     v = cv2.VideoCapture(CAMERA_PORT_BOT,cv2.CAP_DSHOW)
 
     frame_number = 0
-    file_name = 'M.pkl'
 
-    with open(file_name, 'rb') as file:
+    with open(os.path.join(pkl_save_path, 'M.pkl'), 'rb') as file:
         M = pickle.load(file)
-    file_name = 'height.pkl'
-    with open(file_name, 'rb') as file:
+    with open(os.path.join(pkl_save_path, 'height.pkl'), 'rb') as file:
         x1, y1, w1, h1 = pickle.load(file)
-    file_name = 'force.pkl'
-    with open(file_name, 'rb') as file:
+    with open(os.path.join(pkl_save_path, 'force.pkl'), 'rb') as file:
         x2, y2, w2, h2 = pickle.load(file)
-    file_name = 'display.pkl'
-    with open(file_name, 'rb') as file:
+    with open(os.path.join(pkl_save_path, 'display.pkl'), 'rb') as file:
         x3, y3, w3, h3 = pickle.load(file)
     while True:
         t = time.time()
