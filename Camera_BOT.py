@@ -42,13 +42,12 @@ def OCR_THIRD(img):
 def get_display():
     s = socket.socket()
     s.connect((host, int(port)))
-    print(os.path.basename(__file__) + ' bind')
     v = cv2.VideoCapture(CAMERA_PORT_BOT,cv2.CAP_DSHOW)
 
     frame_number = 0
+    print(os.path.basename(__file__) + ' bind')
 
-    with open(os.path.join(pkl_save_path, 'M.pkl'), 'rb') as file:
-        M = pickle.load(file)
+
     with open(os.path.join(pkl_save_path, 'height.pkl'), 'rb') as file:
         x1, y1, w1, h1 = pickle.load(file)
     with open(os.path.join(pkl_save_path, 'force.pkl'), 'rb') as file:
@@ -59,7 +58,6 @@ def get_display():
         t = time.time()
         ret, img = v.read()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # img = np.rot90(img,k=-2)
 
         send_data  = cv2.resize(img[y3:y3+h3,x3:x3+w3,:], (640, 480))
         # send_data = cv2.warpPerspective(img, M, (640, 480))

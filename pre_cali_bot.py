@@ -26,7 +26,6 @@ def get_bot_display(img):
         if not ret2:
             raise ValueError
             break
-        # frame_bot = np.rot90(frame_bot, 2)
         cv2.imshow('frame_bot', frame_bot)
         k = cv2.waitKey(1)
 
