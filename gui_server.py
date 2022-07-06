@@ -210,6 +210,10 @@ class Gui(Gui_base):
         if self.out_bot.isOpened():
             self.out_top.release()
             self.out_bot.release()
+            with open(f'Patient_{self.patient_idx}_tof1.p', 'wb') as f:
+                pickle.dump(self.tof1_file, f)
+            with open(f'Patient_{self.patient_idx}_tof2.p', 'wb') as f:
+                pickle.dump(self.tof2_file, f)
         self.root.quit()
 
     def new_writer(self):

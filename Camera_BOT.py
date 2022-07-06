@@ -31,6 +31,8 @@ def OCR_THIRD(img):
     result = result[0]
     try:
         result = int(result[0])
+        if result > UPPER_NUMMER:
+            return -1
     except  IndexError :
         result = -1
     except ValueError :

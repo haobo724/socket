@@ -25,7 +25,6 @@ def get_bot_display(img):
             ret2 = True
         if not ret2:
             raise ValueError
-            break
         cv2.imshow('frame_bot', frame_bot)
         k = cv2.waitKey(1)
 
@@ -49,16 +48,20 @@ def get_force_height_area(img):
     force_file = cv2.selectROI('force', img)
     with open(os.path.join(pkl_save_path, 'force.pkl'), 'wb') as file:
         pickle.dump(force_file, file)
+    cv2.destroyAllWindows()
+
 
     height_file = cv2.selectROI('height', img)
     with open(os.path.join(pkl_save_path, 'height.pkl'), 'wb') as file:
         pickle.dump(height_file, file)
+    cv2.destroyAllWindows()
 
 
 def get_whole_display(img):
     display_file = cv2.selectROI('whole_display', img)
     with open(os.path.join(pkl_save_path, 'display.pkl'), 'wb') as file:
         pickle.dump(display_file, file)
+    cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':

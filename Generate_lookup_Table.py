@@ -302,13 +302,13 @@ if __name__ == '__main__':
     # #     split(i)
     #     video = cv2.VideoCapture(i)
     #     print(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    path = 'lookup_Table(TOP).mp4'
+    path = 'video/lookup_Table(TOP).mp4'
     Pts_List = Rec_Green_Pattern(path) #BGR INPUT
     Pts_List_smooth = smooth_pts(Pts_List)
     # # Mid = point_mid('')
     # # smooth = 'pkl/Pts_List_smooth.pkl'
     # # Kalman(smooth)
-    path = 'lookup_Table(BOT).mp4'
+    path = 'video/lookup_Table(BOT).mp4'
     last_high_first_low = rec_bot(path)
     Pts_List_cut = cut_down(os.path.join(pkl_save_path, 'Pts_List_smooth.pkl'),
                             os.path.join(pkl_save_path, 'last_high_first_low.pkl'))
